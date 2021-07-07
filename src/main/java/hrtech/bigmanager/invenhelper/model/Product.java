@@ -20,8 +20,12 @@ public class Product implements Domain<Product, ProductKey> {
         this.quantity = quantity;
     }
 
-    public String getProductKey() {
+    public String getProductBusinessKey() {
         return identifier.getInternalKey();
+    }
+
+    public String getProductID() {
+        return identifier.getDatabaseKey().toString();
     }
 
     public String getName() {

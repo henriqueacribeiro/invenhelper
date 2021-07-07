@@ -28,4 +28,12 @@ public interface Domain<E, K> {
      */
     JSONObject convertToJSON();
 
+    /**
+     * Method that compares if an entity corresponds to the other, by the key
+     *
+     * @param otherEntity entity to compare
+     * @return true if the entities are equal, false otherwise
+     */
+    boolean sameAs(E otherEntity);
+
 }

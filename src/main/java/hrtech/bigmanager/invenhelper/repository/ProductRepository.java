@@ -69,7 +69,8 @@ public class ProductRepository extends JdbcDaoSupport implements IRepository<Pro
      * @param productToCreate product to be created
      * @return true on success; false otherwise
      */
-    public boolean createProduct(Product productToCreate) {
+    @Override
+    public boolean insert(Product productToCreate) {
         String createProduct = "INSERT INTO product (id, business_id, name, description, quantity) VALUES (?, ?, ?, ?, ?)";
         if (getJdbcTemplate() != null) {
             try {
@@ -111,7 +112,7 @@ public class ProductRepository extends JdbcDaoSupport implements IRepository<Pro
     }
 
     /**
-     * Method that, given a key object, returns the corresponding Entity on an Optional
+     * Method that, given a key object, returns the corresponding object using the database identifier
      *
      * @param keyToSearch valid key object to search the entity
      * @return Option that contains the entity, if such ID exists on the database
@@ -121,6 +122,26 @@ public class ProductRepository extends JdbcDaoSupport implements IRepository<Pro
         if (getJdbcTemplate() != null) {
             try {
                 return getJdbcTemplate().queryForObject("SELECT * FROM product WHERE id = ?", (rs, rowNum) -> map(rs), keyToSearch.getDatabaseKey().toString());
+            } catch (DataAccessException e) {
+                logger.error("Error while manipulating data: " + e.getLocalizedMessage());
+                return Optional.empty();
+            }
+        } else {
+            logger.error("Invalid JDBC template instance");
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Method that, given a key object, returns the corresponding object using the business identifier
+     *
+     * @param keyToSearch valid key object to search the entity
+     * @return Option that contains the entity, if such ID exists on the database
+     */
+    public Optional<Product> findByBusinessId(ProductKey keyToSearch) {
+        if (getJdbcTemplate() != null) {
+            try {
+                return getJdbcTemplate().queryForObject("SELECT * FROM product WHERE business_id = ?", (rs, rowNum) -> map(rs), keyToSearch.getInternalKey());
             } catch (DataAccessException e) {
                 logger.error("Error while manipulating data: " + e.getLocalizedMessage());
                 return Optional.empty();

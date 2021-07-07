@@ -2,6 +2,8 @@ package hrtech.bigmanager.invenhelper.model;
 
 import hrtech.bigmanager.invenhelper.exception.InvalidText;
 
+import java.util.Objects;
+
 /**
  * Product information. It contains name and description
  */
@@ -61,5 +63,18 @@ public class ProductInformation {
      */
     private boolean validText(String text) {
         return !text.isBlank();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ProductInformation that = (ProductInformation) o;
+        return getName().equals(that.getName()) && getDescription().equals(that.getDescription());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName(), getDescription());
     }
 }

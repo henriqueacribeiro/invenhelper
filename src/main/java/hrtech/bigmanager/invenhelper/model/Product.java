@@ -5,6 +5,8 @@ import hrtech.bigmanager.invenhelper.exception.InvalidRepresentationOfConceptOnJ
 import hrtech.bigmanager.invenhelper.exception.InvalidText;
 import org.json.JSONObject;
 
+import java.util.Objects;
+
 /**
  * Product on the inventory
  */
@@ -118,5 +120,29 @@ public class Product implements Domain<Product, ProductKey> {
         answer.put("description", this.information.getDescription());
         answer.put("quantity", this.quantity.getQuantity());
         return answer;
+    }
+
+    /**
+     * Method that compares if an entity corresponds to the other, by the key
+     *
+     * @param otherEntity entity to compare
+     * @return true if the entities are equal, false otherwise
+     */
+    @Override
+    public boolean sameAs(Product otherEntity) {
+        return this.identifier.equals(otherEntity.identifier);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return identifier.equals(product.identifier) && information.equals(product.information) && getQuantity() == product.getQuantity();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(identifier, information, getQuantity());
     }
 }

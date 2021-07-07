@@ -58,10 +58,18 @@ public interface IRepository<E extends Domain<E, K>, K extends DomainKey<K>> {
     Optional<E> map(ResultSet resultSet);
 
     /**
+     * Method that inserts an entity on the repository
+     *
+     * @param objectToSave entity to be created
+     * @return true on success; false otherwise
+     */
+    boolean insert(E objectToSave);
+
+    /**
      * Method that saves an entity on the repository
      *
-     * @param objectToSave entity to be created/updated
-     * @return entity created/updated
+     * @param objectToSave entity to be updated
+     * @return true on success; false otherwise
      */
     boolean save(E objectToSave);
 

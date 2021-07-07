@@ -39,7 +39,7 @@ public class InvenHelperApplication {
             Quantity quantity = new Quantity(4);
             ProductKey key = new ProductKey("TestProduct");
             Product product = new Product(key, info, quantity);
-            repo.createProduct(product);
+            repo.insert(product);
 
             logger.info("Finished product mock data creation");
         };

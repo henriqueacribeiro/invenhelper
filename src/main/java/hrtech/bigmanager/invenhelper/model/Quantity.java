@@ -17,7 +17,7 @@ public class Quantity {
      * @param quantity quantity to use on construction
      * @throws InvalidQuantity if the quantity is invalid (less than zero)
      */
-    public Quantity(int quantity) {
+    public Quantity(int quantity) throws InvalidQuantity{
         if (validQuantity(quantity)) {
             this.quantity = quantity;
         } else {

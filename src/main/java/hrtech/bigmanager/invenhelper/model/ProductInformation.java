@@ -12,7 +12,7 @@ public class ProductInformation {
     private String name;
     private String description;
 
-    public ProductInformation(String name, String description) {
+    public ProductInformation(String name, String description) throws InvalidText {
         if (validText(name) && validText(description)) {
             this.name = name;
             this.description = description;

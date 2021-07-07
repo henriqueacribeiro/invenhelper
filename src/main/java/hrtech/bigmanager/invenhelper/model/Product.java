@@ -1,11 +1,13 @@
 package hrtech.bigmanager.invenhelper.model;
 
+import hrtech.bigmanager.invenhelper.exception.InvalidBusinessIdentifier;
 import hrtech.bigmanager.invenhelper.exception.InvalidQuantity;
 import hrtech.bigmanager.invenhelper.exception.InvalidRepresentationOfConceptOnJSON;
 import hrtech.bigmanager.invenhelper.exception.InvalidText;
 import org.json.JSONObject;
 
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Product on the inventory
@@ -104,6 +106,29 @@ public class Product implements Domain<Product, ProductKey> {
             throw new InvalidRepresentationOfConceptOnJSON("Invalid quantity: " + quantity);
         } catch (InvalidText it) {
             throw new InvalidRepresentationOfConceptOnJSON("Invalid text found (description or name");
+        }
+    }
+
+    /**
+     * Method that converts a JSONObject into the domain concept. It differs from the other method since the object obtained will have the quantity at zero and a new UUID
+     *
+     * @param jsonObject object to convert
+     * @return domain concept built from the JSON representation
+     */
+    public static Product convertFromJSONToCreate(JSONObject jsonObject) throws InvalidRepresentationOfConceptOnJSON {
+        String productInternalKey = jsonObject.optString("identifier", "");
+        String productName = jsonObject.optString("name", "");
+        String productDescription = jsonObject.optString("description", "");
+
+        try {
+            ProductKey key = new ProductKey(UUID.randomUUID(), productInternalKey);
+            ProductInformation info = new ProductInformation(productName, productDescription);
+            Quantity quantityDomain = new Quantity(0);
+            return new Product(key, info, quantityDomain);
+        } catch (InvalidText it) {
+            throw new InvalidRepresentationOfConceptOnJSON("Invalid text found (description or name");
+        } catch (InvalidBusinessIdentifier ibi) {
+            throw new InvalidRepresentationOfConceptOnJSON(ibi.getLocalizedMessage());
         }
     }
 

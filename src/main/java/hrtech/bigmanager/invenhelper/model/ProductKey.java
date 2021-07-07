@@ -1,5 +1,7 @@
 package hrtech.bigmanager.invenhelper.model;
 
+import hrtech.bigmanager.invenhelper.exception.InvalidBusinessIdentifier;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -11,14 +13,34 @@ public class ProductKey implements DomainKey<ProductKey> {
     private final UUID databaseKey;
     private String internalKey;
 
-    public ProductKey(String internalKey) {
+    /**
+     * This constructor creates a Product key, using a business key (that is tested) and generates a database key (UUID)
+     *
+     * @param internalKey internal product key
+     * @throws InvalidBusinessIdentifier if the internal key is invalid
+     */
+    public ProductKey(String internalKey) throws InvalidBusinessIdentifier {
         this.databaseKey = DomainKey.generateID();
-        this.internalKey = internalKey;
+        if (validBusinessKey(internalKey)) {
+            this.internalKey = internalKey;
+        } else {
+            throw new InvalidBusinessIdentifier(internalKey);
+        }
     }
 
-    public ProductKey(UUID databaseKey, String internalKey) {
+    /**
+     * This constructor creates a Product key, using a business key (that is tested) and the database key
+     *
+     * @param internalKey internal product key
+     * @throws InvalidBusinessIdentifier if the internal key is invalid
+     */
+    public ProductKey(UUID databaseKey, String internalKey) throws InvalidBusinessIdentifier {
         this.databaseKey = databaseKey;
-        this.internalKey = internalKey;
+        if (validBusinessKey(internalKey)) {
+            this.internalKey = internalKey;
+        } else {
+            throw new InvalidBusinessIdentifier(internalKey);
+        }
     }
 
     public UUID getDatabaseKey() {
@@ -31,6 +53,16 @@ public class ProductKey implements DomainKey<ProductKey> {
 
     public void setInternalKey(String internalKey) {
         this.internalKey = internalKey;
+    }
+
+    /**
+     * Method that validates a text
+     *
+     * @param text text to be checked
+     * @return true on success
+     */
+    private boolean validBusinessKey(String text) {
+        return !text.isBlank();
     }
 
     @Override

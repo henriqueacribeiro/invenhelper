@@ -27,11 +27,16 @@ class ProductServiceTest {
     private UUID defaultDatabaseCode;
     private String defaultCode;
     private ProductKey defaultKey;
+
     private String defaultName;
     private String defaultDescription;
     private ProductInformation defaultInformation;
+
     private int defaultGoodQuantity;
+    private int randomNumberToIncrease;
+    private int randomNumberToDecrease;
     private Quantity defaultQuantity;
+
     private Product product;
 
     private String generateString() {
@@ -52,6 +57,8 @@ class ProductServiceTest {
     void setUp() {
         Random random = new Random();
         defaultGoodQuantity = random.ints(1, 1000).findFirst().getAsInt();
+        randomNumberToIncrease = random.ints(1, 1000).findFirst().getAsInt();
+        randomNumberToDecrease = random.ints(0, defaultGoodQuantity).findFirst().getAsInt();
         defaultQuantity = new Quantity(defaultGoodQuantity);
 
         defaultName = generateString();
@@ -155,5 +162,50 @@ class ProductServiceTest {
         response = service.createNewProduct(objectToInject);
         assertFalse(response.isSuccess());
         assertEquals("A product with the same business identifier is already registered", response.getAdditionalInformation());
+    }
+
+    @Test
+    void increaseQuantityValid() {
+        assertTrue(service.insert(product));
+        product.increaseQuantity(randomNumberToIncrease);
+        Response<Product> methodResponse = service.increaseQuantity(defaultCode, randomNumberToIncrease);
+        assertTrue(methodResponse.isSuccess());
+        assertEquals(product, methodResponse.getObjectToReturn());
+    }
+
+    @Test
+    void increaseQuantityNoProductFound() {
+        assertTrue(service.insert(product));
+        product.increaseQuantity(randomNumberToIncrease);
+        Response<Product> methodResponse = service.increaseQuantity("CODE", randomNumberToIncrease);
+        assertFalse(methodResponse.isSuccess());
+        assertEquals("Product not found", methodResponse.getAdditionalInformation());
+    }
+
+    @Test
+    void decreaseQuantityValid() {
+        assertTrue(service.insert(product));
+        product.decreaseQuantity(randomNumberToDecrease);
+        Response<Product> methodResponse = service.decreaseQuantity(defaultCode, randomNumberToDecrease);
+        assertTrue(methodResponse.isSuccess());
+        assertEquals(product, methodResponse.getObjectToReturn());
+    }
+
+    @Test
+    void decreaseQuantityNoProductFound() {
+        assertTrue(service.insert(product));
+        product.decreaseQuantity(randomNumberToDecrease);
+        Response<Product> methodResponse = service.decreaseQuantity("TEST", randomNumberToDecrease);
+        assertFalse(methodResponse.isSuccess());
+        assertEquals("Product not found", methodResponse.getAdditionalInformation());
+    }
+
+    @Test
+    void decreaseQuantityInvalidQuantity() {
+        assertTrue(service.insert(product));
+        product.decreaseQuantity(randomNumberToDecrease);
+        Response<Product> methodResponse = service.decreaseQuantity(defaultCode, defaultGoodQuantity + 5);
+        assertFalse(methodResponse.isSuccess());
+        assertEquals("Invalid quantity obtained while trying to decrease", methodResponse.getAdditionalInformation());
     }
 }

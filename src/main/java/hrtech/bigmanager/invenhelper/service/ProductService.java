@@ -1,5 +1,6 @@
 package hrtech.bigmanager.invenhelper.service;
 
+import hrtech.bigmanager.invenhelper.exception.InvalidQuantity;
 import hrtech.bigmanager.invenhelper.exception.InvalidRepresentationOfConceptOnJSON;
 import hrtech.bigmanager.invenhelper.model.DomainKey;
 import hrtech.bigmanager.invenhelper.model.Product;
@@ -79,7 +80,6 @@ public class ProductService implements IService<Product, ProductKey> {
         return productRepository.findByBusinessId(key);
     }
 
-
     /**
      * Method that, receiving a valid JSON object, creates a new Product and saves it on the database
      *
@@ -103,4 +103,59 @@ public class ProductService implements IService<Product, ProductKey> {
             return new Response<>(false, e.getLocalizedMessage());
         }
     }
+
+    /**
+     * Method that obtains a product by its business identifier and increases by the quantity passed by parameter
+     *
+     * @param businessIdentifier product identifier
+     * @param quantity           quantity to be increased
+     * @return Response with info about the success of the operation
+     */
+    public Response<Product> increaseQuantity(String businessIdentifier, int quantity) {
+        Optional<Product> optionalProduct = findByBusinessKey(businessIdentifier);
+        if (optionalProduct.isEmpty()) {
+            return new Response<>(false, "Product not found");
+        }
+
+        Product product = optionalProduct.get();
+        try {
+            product.increaseQuantity(quantity);
+        } catch (InvalidQuantity iq) {
+            return new Response<>(false, "Invalid quantity obtained while trying to increase");
+        }
+
+        if (this.save(product)) {
+            return new Response<>(true, "Quantity updated", product);
+        } else {
+            return new Response<>(false, "Error updating database", product);
+        }
+    }
+
+    /**
+     * Method that obtains a product by its business identifier and decreases by the quantity passed by parameter
+     *
+     * @param businessIdentifier product identifier
+     * @param quantity           quantity to be increased
+     * @return Response with info about the success of the operation
+     */
+    public Response<Product> decreaseQuantity(String businessIdentifier, int quantity) {
+        Optional<Product> optionalProduct = findByBusinessKey(businessIdentifier);
+        if (optionalProduct.isEmpty()) {
+            return new Response<>(false, "Product not found");
+        }
+
+        Product product = optionalProduct.get();
+        try {
+            product.decreaseQuantity(quantity);
+        } catch (InvalidQuantity iq) {
+            return new Response<>(false, "Invalid quantity obtained while trying to decrease");
+        }
+
+        if (this.save(product)) {
+            return new Response<>(true, "Quantity updated", product);
+        } else {
+            return new Response<>(false, "Error updating database", product);
+        }
+    }
+
 }

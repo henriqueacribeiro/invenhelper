@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS 'invenhelper';
 CREATE DATABASE IF NOT EXISTS 'invenhelper';
 USE 'invenhelper';
 

@@ -5,7 +5,7 @@ An inventory management simple application
 # Starting the Application
 
 ## General Concerns
-To execute this application it is necessary to have a database specified on the `application.properties` file (check the database section for more info) available.
+To execute this application it is necessary to have a database specified on the `application.properties` file (check the database section for more info).
 
 ## Gradle
 To run using Gradle, it is only necessary to execute `gradle bootRun`. The application will be built (if necessary) and then it starts.
@@ -38,3 +38,6 @@ The data is specified on the `InvenHelperApplication` class, `bootstrap` method,
 The application behavior can be tested using `gradle test`. This command will execute basic logic verification (unit testing) and integration tests using an in-memory H2 database on MySQL mode.
 
 The `databaseinit.sql` in the `resources` directory inside the `test` main directory contains a script that creates the database.
+
+# API Documentation
+While running, visiting the `/doc.html` page will show the Swagger documentation. 

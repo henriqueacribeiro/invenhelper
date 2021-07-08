@@ -208,4 +208,96 @@ class ProductServiceTest {
         assertFalse(methodResponse.isSuccess());
         assertEquals("Invalid quantity obtained while trying to decrease", methodResponse.getAdditionalInformation());
     }
+
+    @Test
+    void updateProductInformationValidInformation() {
+        JSONObject objectToInject = new JSONObject();
+        String newName = generateString();
+        String newDescription = generateString();
+        objectToInject.put("identifier", defaultCode);
+        objectToInject.put("name", newName);
+        objectToInject.put("description", newDescription);
+
+        assertTrue(service.insert(product));
+        Response<Product> updateInfo = service.updateProductInformation(objectToInject);
+        assertTrue(updateInfo.isSuccess());
+
+        Optional<Product> productOnDatabase = service.findByBusinessKey(defaultCode);
+        assertTrue(productOnDatabase.isPresent());
+        Product productRetrieved = productOnDatabase.get();
+        assertEquals(newName, productRetrieved.getName());
+        assertEquals(newDescription, productRetrieved.getDescription());
+    }
+
+    @Test
+    void updateProductInformationValidInformationNoIdentifier() {
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("identifier", "");
+        objectToInject.put("name", defaultName);
+        objectToInject.put("description", defaultDescription);
+
+        assertTrue(service.insert(product));
+
+        Response<Product> response = service.updateProductInformation(objectToInject);
+        assertFalse(response.isSuccess());
+        assertEquals("Product not found", response.getAdditionalInformation());
+    }
+
+    @Test
+    void updateProductInformationValidInformationNoInfoToChange() {
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("identifier", defaultCode);
+
+        assertTrue(service.insert(product));
+
+        Response<Product> response = service.updateProductInformation(objectToInject);
+        assertTrue(response.isSuccess());
+        assertEquals("No information to update product", response.getAdditionalInformation());
+
+        Optional<Product> productOnDatabase = service.findByBusinessKey(defaultCode);
+        assertTrue(productOnDatabase.isPresent());
+        Product productRetrieved = productOnDatabase.get();
+        assertEquals(defaultName, productRetrieved.getName());
+        assertEquals(defaultDescription, productRetrieved.getDescription());
+    }
+
+    @Test
+    void updateProductInformationValidInformationInvalidName() {
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("identifier", defaultCode);
+        objectToInject.put("name", "");
+        objectToInject.put("description", "Test");
+
+        assertTrue(service.insert(product));
+
+        Response<Product> response = service.updateProductInformation(objectToInject);
+        assertFalse(response.isSuccess());
+        assertEquals("Invalid product name: ", response.getAdditionalInformation());
+
+        Optional<Product> productOnDatabase = service.findByBusinessKey(defaultCode);
+        assertTrue(productOnDatabase.isPresent());
+        Product productRetrieved = productOnDatabase.get();
+        assertEquals(defaultName, productRetrieved.getName());
+        assertEquals(defaultDescription, productRetrieved.getDescription());
+    }
+
+    @Test
+    void updateProductInformationValidInformationInvalidDescription() {
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("identifier", defaultCode);
+        objectToInject.put("name", defaultName);
+        objectToInject.put("description", "");
+
+        assertTrue(service.insert(product));
+
+        Response<Product> response = service.updateProductInformation(objectToInject);
+        assertFalse(response.isSuccess());
+        assertEquals("Invalid product description: ", response.getAdditionalInformation());
+
+        Optional<Product> productOnDatabase = service.findByBusinessKey(defaultCode);
+        assertTrue(productOnDatabase.isPresent());
+        Product productRetrieved = productOnDatabase.get();
+        assertEquals(defaultName, productRetrieved.getName());
+        assertEquals(defaultDescription, productRetrieved.getDescription());
+    }
 }

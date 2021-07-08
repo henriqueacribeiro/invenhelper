@@ -1,7 +1,9 @@
 package hrtech.bigmanager.invenhelper.service;
 
+import hrtech.bigmanager.invenhelper.exception.InvalidBusinessIdentifier;
 import hrtech.bigmanager.invenhelper.exception.InvalidQuantity;
 import hrtech.bigmanager.invenhelper.exception.InvalidRepresentationOfConceptOnJSON;
+import hrtech.bigmanager.invenhelper.exception.InvalidText;
 import hrtech.bigmanager.invenhelper.model.DomainKey;
 import hrtech.bigmanager.invenhelper.model.Product;
 import hrtech.bigmanager.invenhelper.model.ProductKey;
@@ -76,8 +78,12 @@ public class ProductService implements IService<Product, ProductKey> {
      * @return Option that contains the entity, if such ID exists on the database
      */
     public Optional<Product> findByBusinessKey(String keyToSearch) {
-        ProductKey key = new ProductKey(UUID.randomUUID(), keyToSearch);
-        return productRepository.findByBusinessId(key);
+        try {
+            ProductKey key = new ProductKey(UUID.randomUUID(), keyToSearch);
+            return productRepository.findByBusinessId(key);
+        } catch (InvalidBusinessIdentifier ibi) {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -158,4 +164,45 @@ public class ProductService implements IService<Product, ProductKey> {
         }
     }
 
+    /**
+     * Method that updates the product information (name and description).
+     *
+     * @param info JSON object with info to update. It must contain the 'identifier' obligatory, 'name' and 'description' are optional
+     * @return Response with info about the success of the operation
+     */
+    public Response<Product> updateProductInformation(JSONObject info) {
+        String businessIdentifier = info.optString("identifier", "");
+        Optional<Product> productToUpdate = findByBusinessKey(businessIdentifier);
+        if (productToUpdate.isEmpty()) {
+            return new Response<>(false, "Product not found");
+        }
+
+        try {
+            boolean hasChanges = false;
+
+            Product oldProduct = productToUpdate.get();
+            if (info.has("name")) {
+                oldProduct.changeName(info.optString("name", ""));
+                hasChanges = true;
+            }
+            if (info.has("description")) {
+                oldProduct.changeDescription(info.optString("description", ""));
+                hasChanges = true;
+            }
+
+            if (!hasChanges) {
+                return new Response<>(true, "No information to update product");
+            }
+            if (this.save(oldProduct)) {
+                return new Response<>(true, "Product updated", oldProduct);
+            } else {
+                return new Response<>(false, "Error updating database", productToUpdate.get());
+            }
+        } catch (InvalidText it) {
+            return new Response<>(false, it.getLocalizedMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getLocalizedMessage());
+            return new Response<>(false, "Error while updating product information");
+        }
+    }
 }

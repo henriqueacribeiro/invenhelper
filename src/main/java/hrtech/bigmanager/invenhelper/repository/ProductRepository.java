@@ -11,9 +11,8 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Product repository
@@ -150,5 +149,28 @@ public class ProductRepository extends JdbcDaoSupport implements IRepository<Pro
             logger.error("Invalid JDBC template instance");
             return Optional.empty();
         }
+    }
+
+    /**
+     * Method that returns the list of business identifiers on the database
+     *
+     * @return list of business identifier on database
+     */
+    public List<String> findListOfIdentifiers() {
+        List<String> result = new ArrayList<>();
+        if (getJdbcTemplate() != null) {
+            try {
+                List<Optional<Product>> optionalList = getJdbcTemplate().query(
+                        "SELECT * FROM product", (rs, rowNum) -> map(rs));
+                result = optionalList.stream().filter(Optional::isPresent).map(Optional::get).map(Product::getProductBusinessKey).collect(Collectors.toList());
+            } catch (DataAccessException e) {
+                logger.error("Error while manipulating data: " + e.getLocalizedMessage());
+                return result;
+            }
+        } else {
+            logger.error("Invalid JDBC template instance");
+            return result;
+        }
+        return result;
     }
 }

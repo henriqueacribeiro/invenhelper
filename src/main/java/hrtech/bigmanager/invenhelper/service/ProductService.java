@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,6 +53,15 @@ public class ProductService implements IService<Product, ProductKey> {
     @Override
     public boolean save(Product objectToSave) {
         return productRepository.save(objectToSave);
+    }
+
+    /**
+     * Method that returns the list of business identifiers
+     *
+     * @return list of business identifier
+     */
+    public List<String> findListOfIdentifiers() {
+        return productRepository.findListOfIdentifiers();
     }
 
     /**
@@ -123,6 +133,10 @@ public class ProductService implements IService<Product, ProductKey> {
             return new Response<>(false, "Product not found");
         }
 
+        if (quantity < 0) {
+            return new Response<>(false, "The number must be positive");
+        }
+
         Product product = optionalProduct.get();
         try {
             product.increaseQuantity(quantity);
@@ -148,6 +162,10 @@ public class ProductService implements IService<Product, ProductKey> {
         Optional<Product> optionalProduct = findByBusinessKey(businessIdentifier);
         if (optionalProduct.isEmpty()) {
             return new Response<>(false, "Product not found");
+        }
+
+        if (quantity < 0) {
+            return new Response<>(false, "The number must be positive");
         }
 
         Product product = optionalProduct.get();

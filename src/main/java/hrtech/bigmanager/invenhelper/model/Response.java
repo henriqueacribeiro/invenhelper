@@ -53,7 +53,7 @@ public class Response<E extends Domain> implements Serializable {
      *
      * @return JSONObject with info about the success
      */
-    public JSONObject getJSONWithSuccess() {
+    public JSONObject obtainJSONWithSuccess() {
         JSONObject objectToReturn = new JSONObject();
         objectToReturn.put("success", success);
         return objectToReturn;
@@ -64,8 +64,8 @@ public class Response<E extends Domain> implements Serializable {
      *
      * @return JSONObject with info about the success and the additional message
      */
-    public JSONObject getJSONWithAndAdditionalInformation() {
-        JSONObject objectToReturn = getJSONWithSuccess();
+    public JSONObject obtainJSONWithAdditionalInformation() {
+        JSONObject objectToReturn = obtainJSONWithSuccess();
         objectToReturn.put("information", additionalInformation);
         return objectToReturn;
     }
@@ -75,8 +75,8 @@ public class Response<E extends Domain> implements Serializable {
      *
      * @return JSONObject with all the info of the Response
      */
-    public JSONObject getJSONWithAllInfo() {
-        JSONObject objectToReturn = getJSONWithAndAdditionalInformation();
+    public JSONObject obtainJSONWithAllInfo() {
+        JSONObject objectToReturn = obtainJSONWithAdditionalInformation();
         if (this.objectToReturn != null) {
             objectToReturn.put("object", this.objectToReturn.convertToJSON());
         }

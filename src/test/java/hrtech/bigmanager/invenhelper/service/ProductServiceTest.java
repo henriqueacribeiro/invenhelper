@@ -10,9 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -299,5 +297,25 @@ class ProductServiceTest {
         Product productRetrieved = productOnDatabase.get();
         assertEquals(defaultName, productRetrieved.getName());
         assertEquals(defaultDescription, productRetrieved.getDescription());
+    }
+
+    @Test
+    void findListOfIdentifiersEmpty() {
+        assertTrue(service.findListOfIdentifiers().isEmpty());
+    }
+
+    @Test
+    void findListOfIdentifiers() {
+        assertTrue(service.findListOfIdentifiers().isEmpty());
+        assertTrue(service.insert(product));
+        assertEquals(Collections.singletonList(product.getProductBusinessKey()), service.findListOfIdentifiers());
+
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("identifier", defaultCode + "TESTING");
+        objectToInject.put("name", defaultName);
+        objectToInject.put("description", defaultDescription);
+        Response<Product> p = service.createNewProduct(objectToInject);
+        assertTrue(p.isSuccess());
+        assertEquals(Arrays.asList(product.getProductBusinessKey(), p.getObjectToReturn().getProductBusinessKey()), service.findListOfIdentifiers());
     }
 }

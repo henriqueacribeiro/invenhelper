@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -99,5 +100,17 @@ class ProductRepositoryTest {
         assertTrue(obtainedProduct.isPresent());
         assertEquals(product, obtainedProduct.get());
         assertTrue(product.sameAs(obtainedProduct.get()));
+    }
+
+    @Test
+    void findListOfIdentifiersEmpty() {
+        assertTrue(repository.findListOfIdentifiers().isEmpty());
+    }
+
+    @Test
+    void findListOfIdentifiers() {
+        assertTrue(repository.findListOfIdentifiers().isEmpty());
+        assertTrue(repository.insert(product));
+        assertEquals(Collections.singletonList(product.getProductBusinessKey()), repository.findListOfIdentifiers());
     }
 }

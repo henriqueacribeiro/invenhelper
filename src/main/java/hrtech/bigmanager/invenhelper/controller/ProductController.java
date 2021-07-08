@@ -87,7 +87,7 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "Product updated", content = @Content(schema = @Schema(implementation = Response.class))),
             @ApiResponse(responseCode = "400", description = "Error while updating product", content = @Content(schema = @Schema(implementation = Response.class)))
     })
-    public ResponseEntity<String> increaseQuantity(@RequestBody String informationAboutProductOnString) {
+    public ResponseEntity<String> updateProduct(@RequestBody String informationAboutProductOnString) {
         try {
             JSONObject object = new JSONObject(informationAboutProductOnString);
             Response<Product> response = service.updateProductInformation(object);

@@ -17,6 +17,11 @@ import java.util.UUID;
  */
 public class User implements Domain<User, UserKey> {
 
+    //Permission names
+    public static final String CAN_MODIFY_INVENTORY = "CAN_MODIFY_INVENTORY";
+    public static final String CAN_ADD_USERS = "CAN_ADD_USERS";
+    public static final String CAN_MODIFY_PRODUCTS = "CAN_MODIFY_PRODUCTS";
+
     private final UserKey key;
     private final UserInformation information;
     private final Map<String, Boolean> permissionMap;
@@ -64,6 +69,10 @@ public class User implements Domain<User, UserKey> {
         } catch (InvalidText | InvalidBusinessIdentifier it) {
             throw new InvalidRepresentationOfConceptOnJSON(it.getLocalizedMessage());
         }
+    }
+
+    public UUID getDatabaseKey() {
+        return this.key.getDatabaseKey();
     }
 
     public String getUsername() {

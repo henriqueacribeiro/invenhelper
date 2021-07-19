@@ -3,42 +3,45 @@ package hrtech.bigmanager.invenhelper.model.user;
 import hrtech.bigmanager.invenhelper.exception.InvalidBusinessIdentifier;
 import hrtech.bigmanager.invenhelper.exception.InvalidRepresentationOfConceptOnJSON;
 import hrtech.bigmanager.invenhelper.exception.InvalidText;
+import hrtech.bigmanager.invenhelper.exception.InvalidUserPermission;
 import hrtech.bigmanager.invenhelper.model.Domain;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * User concept
  */
 public class User implements Domain<User, UserKey> {
 
-    //Permission names
-    public static final String CAN_MODIFY_INVENTORY = "CAN_MODIFY_INVENTORY";
-    public static final String CAN_ADD_USERS = "CAN_ADD_USERS";
-    public static final String CAN_MODIFY_PRODUCTS = "CAN_MODIFY_PRODUCTS";
+    private final Map<UserPermission, Boolean> permissionMap;
 
     private final UserKey key;
     private final UserInformation information;
-    private final Map<String, Boolean> permissionMap;
-
     public User(UserKey key, UserInformation information) {
         this.key = key;
         this.information = information;
         this.permissionMap = new HashMap<>();
+
+        for (int i = 0; i < UserPermission.values().length; i++) {
+            permissionMap.put(UserPermission.values()[i], false);
+        }
     }
 
-    public User(UserKey key, UserInformation information, Map<String, Boolean> permissionMap) {
+    public User(UserKey key, UserInformation information, Map<UserPermission, Boolean> permissionMap) {
         if (permissionMap == null) {
             throw new IllegalArgumentException("Invalid permission map");
         }
         this.key = key;
         this.information = information;
         this.permissionMap = permissionMap;
+
+        for (int i = 0; i < UserPermission.values().length; i++) {
+            if (!permissionMap.containsKey(UserPermission.values()[i])) {
+                permissionMap.put(UserPermission.values()[i], false);
+            }
+        }
     }
 
     /**
@@ -50,7 +53,7 @@ public class User implements Domain<User, UserKey> {
     public static User convertFromJSONToCreate(JSONObject jsonObject) throws InvalidRepresentationOfConceptOnJSON {
         String username = jsonObject.optString("username", "");
         String userName = jsonObject.optString("name", "");
-        JSONArray permissionMappingOnObject = jsonObject.getJSONArray("permissions");
+        JSONArray permissionMappingOnObject = jsonObject.has("permissions") ? jsonObject.optJSONArray("permissions") : new JSONArray();
 
         try {
             UserKey key = new UserKey(UUID.randomUUID(), username);
@@ -69,6 +72,21 @@ public class User implements Domain<User, UserKey> {
         } catch (InvalidText | InvalidBusinessIdentifier it) {
             throw new InvalidRepresentationOfConceptOnJSON(it.getLocalizedMessage());
         }
+    }
+
+    /**
+     * Method that adds a new entry to the permission map
+     *
+     * @param permissionName  name of the permission
+     * @param permissionValue value of the permission
+     * @throws InvalidUserPermission if the permission name is invalid
+     */
+    public void addEntryToPermissionMap(String permissionName, boolean permissionValue) throws InvalidText {
+        Optional<UserPermission> permissionOptional = UserPermission.convertNameToPermission(permissionName);
+        if (permissionOptional.isEmpty()) {
+            throw new InvalidUserPermission(permissionName);
+        }
+        permissionMap.put(permissionOptional.get(), permissionValue);
     }
 
     public UUID getDatabaseKey() {
@@ -92,27 +110,18 @@ public class User implements Domain<User, UserKey> {
     }
 
     /**
-     * Method that adds a new entry to the permission map
-     *
-     * @param permissionName  name of the permission
-     * @param permissionValue value of the permission
-     * @throws InvalidText if the permission name is empty
-     */
-    public void addEntryToPermissionMap(String permissionName, boolean permissionValue) throws InvalidText {
-        if (permissionName.isBlank()) {
-            throw new InvalidText("Invalid permission name");
-        }
-        permissionMap.put(permissionName, permissionValue);
-    }
-
-    /**
      * Method that checks a user permission. If the permission to check does not exist, returns false
      *
      * @param permissionToCheck name of the permission to check
      * @return true or false, depending if a user has the permission; false if the permission does not exist
      */
     public boolean checkUserPermission(String permissionToCheck) {
-        return permissionMap.getOrDefault(permissionToCheck, false);
+        Optional<UserPermission> permissionOptional = UserPermission.convertNameToPermission(permissionToCheck);
+        if (permissionOptional.isPresent()) {
+            return permissionMap.getOrDefault(permissionOptional.get(), false);
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -124,12 +133,12 @@ public class User implements Domain<User, UserKey> {
     @Override
     public User convertFromJSON(JSONObject jsonObject) throws InvalidRepresentationOfConceptOnJSON {
         String username = jsonObject.optString("username", "");
-        String userName = jsonObject.optString("name", "");
+        String name = jsonObject.optString("name", "");
         JSONArray permissionMappingOnObject = jsonObject.getJSONArray("permissions");
 
         try {
             UserKey key = new UserKey(UUID.randomUUID(), username);
-            UserInformation info = new UserInformation(userName);
+            UserInformation info = new UserInformation(name);
             User user = new User(key, info);
 
             for (int index = 0; index < permissionMappingOnObject.length(); index++) {
@@ -143,6 +152,122 @@ public class User implements Domain<User, UserKey> {
             return user;
         } catch (InvalidText | InvalidBusinessIdentifier it) {
             throw new InvalidRepresentationOfConceptOnJSON(it.getLocalizedMessage());
+        }
+    }
+
+    /**
+     * User permission map
+     */
+    public enum UserPermission {
+        CAN_MODIFY_INVENTORY {
+            /**
+             * Get permission name
+             *
+             * @return name of the permission
+             */
+            @Override
+            public String getPermissionName() {
+                return "CAN_MODIFY_INVENTORY";
+            }
+
+            /**
+             * Get permission database field name
+             *
+             * @return permission database field name
+             */
+            @Override
+            public String getPermissionDatabaseName() {
+                return "can_modify_inventory";
+            }
+        },
+        CAN_ADD_USERS {
+            /**
+             * Get permission name
+             *
+             * @return name of the permission
+             */
+            @Override
+            public String getPermissionName() {
+                return "CAN_ADD_USERS";
+            }
+
+            /**
+             * Get permission database field name
+             *
+             * @return permission database field name
+             */
+            @Override
+            public String getPermissionDatabaseName() {
+                return "can_add_users";
+            }
+        },
+        CAN_MODIFY_PRODUCTS {
+            /**
+             * Get permission name
+             *
+             * @return name of the permission
+             */
+            @Override
+            public String getPermissionName() {
+                return "CAN_MODIFY_PRODUCTS";
+            }
+
+            /**
+             * Get permission database field name
+             *
+             * @return permission database field name
+             */
+            @Override
+            public String getPermissionDatabaseName() {
+                return "can_modify_products";
+            }
+        };
+
+        /**
+         * Method that returns a list of existing permissions
+         *
+         * @return list of existing permissions
+         */
+        public static List<UserPermission> getListOfExistingPermissions() {
+            return Arrays.asList(UserPermission.values());
+        }
+
+        /**
+         * Method that converts a String representing a name into a permission
+         *
+         * @param permissionName name of the permission to convert
+         * @return Optional with the permission, if found; empty otherwise
+         */
+        public static Optional<UserPermission> convertNameToPermission(String permissionName) {
+            return getListOfExistingPermissions().stream().filter(pm -> pm.getPermissionName().equals(permissionName)).findFirst();
+        }
+
+        /**
+         * Method that converts a String representing a database field into a permission
+         *
+         * @param permissionDatabaseName database field of the permission to convert
+         * @return Optional with the permission, if found; empty otherwise
+         */
+        public static Optional<UserPermission> convertDatabaseNameToPermission(String permissionDatabaseName) {
+            return getListOfExistingPermissions().stream().filter(pm -> pm.getPermissionDatabaseName().equals(permissionDatabaseName)).findFirst();
+        }
+
+        /**
+         * Get permission name
+         *
+         * @return name of the permission
+         */
+        public String getPermissionName() {
+            return "NO_PERMISSION";
+        }
+
+        /**
+         * Get permission database field name
+         *
+         * @return permission database field name
+         */
+        public String getPermissionDatabaseName() {
+            return "NO_PERMISSION";
         }
     }
 

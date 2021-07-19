@@ -22,4 +22,4 @@ CREATE TABLE `user`
     PRIMARY KEY (`id`)
 );
 
-INSERT INTO user(id, username, name, can_modify_inventory, can_modify_products, can_add_users) VALUES ('30559387-ef67-45f9-b4a6-8f5f799955ad', 'admin', 'Administrador', 1, 1, 1);
+INSERT INTO `user`(id, username, name, can_modify_inventory, can_modify_products, can_add_users) VALUES ('30559387-ef67-45f9-b4a6-8f5f799955ad', 'admin', 'Administrador', 1, 1, 1);

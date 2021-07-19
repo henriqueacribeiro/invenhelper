@@ -63,9 +63,9 @@ class UserRepositoryTest {
         defaultKey = new UserKey(defaultDatabaseCode, defaultCode);
 
         user = new User(defaultKey, defaultInformation);
-        user.addEntryToPermissionMap(User.CAN_MODIFY_PRODUCTS, generateRandomBoolean());
-        user.addEntryToPermissionMap(User.CAN_ADD_USERS, generateRandomBoolean());
-        user.addEntryToPermissionMap(User.CAN_MODIFY_INVENTORY, generateRandomBoolean());
+        user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName(), generateRandomBoolean());
+        user.addEntryToPermissionMap(User.UserPermission.CAN_ADD_USERS.getPermissionName(), generateRandomBoolean());
+        user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionName(), generateRandomBoolean());
     }
 
     @Test

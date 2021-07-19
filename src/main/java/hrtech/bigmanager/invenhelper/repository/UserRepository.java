@@ -56,9 +56,9 @@ public class UserRepository extends JdbcDaoSupport implements IRepository<User, 
 
             User newUser = new User(key, information);
 
-            newUser.addEntryToPermissionMap(User.CAN_MODIFY_INVENTORY, resultSet.getInt("user.can_modify_inventory") == 1);
-            newUser.addEntryToPermissionMap(User.CAN_ADD_USERS, resultSet.getInt("user.can_add_users") == 1);
-            newUser.addEntryToPermissionMap(User.CAN_MODIFY_PRODUCTS, resultSet.getInt("user.can_modify_products") == 1);
+            for (User.UserPermission permission: User.UserPermission.getListOfExistingPermissions()) {
+                newUser.addEntryToPermissionMap(permission.getPermissionName(), resultSet.getInt("user." + permission.getPermissionDatabaseName()) == 1);
+            }
 
             user = Optional.of(newUser);
         } catch (SQLException | IllegalArgumentException e) {
@@ -76,13 +76,16 @@ public class UserRepository extends JdbcDaoSupport implements IRepository<User, 
      */
     @Override
     public boolean insert(User userToCreate) {
-        String createUsers = "INSERT INTO user(id, username, name, can_modify_inventory, can_modify_products, can_add_users) VALUES (?, ?, ?, ?, ?, ?)";
+        String createUsers = "INSERT INTO user(id, username, name, "
+                + User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionDatabaseName() + ", "
+                + User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionDatabaseName() + ", "
+                + User.UserPermission.CAN_ADD_USERS.getPermissionDatabaseName() + ") VALUES (?, ?, ?, ?, ?, ?)";
         if (getJdbcTemplate() != null) {
             try {
                 int result = getJdbcTemplate().update(createUsers, userToCreate.getDatabaseKey(), userToCreate.getUsername(),
-                        userToCreate.getName(), userToCreate.checkUserPermission(User.CAN_MODIFY_INVENTORY) ? 1 : 0,
-                        userToCreate.checkUserPermission(User.CAN_MODIFY_PRODUCTS) ? 1 : 0,
-                        userToCreate.checkUserPermission(User.CAN_ADD_USERS) ? 1 : 0);
+                        userToCreate.getName(), userToCreate.checkUserPermission(User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionName()) ? 1 : 0,
+                        userToCreate.checkUserPermission(User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName()) ? 1 : 0,
+                        userToCreate.checkUserPermission(User.UserPermission.CAN_ADD_USERS.getPermissionName()) ? 1 : 0);
                 return result == 1;
             } catch (DataAccessException e) {
                 logger.error("Error while manipulating data: " + e.getLocalizedMessage());
@@ -102,13 +105,17 @@ public class UserRepository extends JdbcDaoSupport implements IRepository<User, 
      */
     @Override
     public boolean save(User objectToSave) {
-        String updateUser = "UPDATE user SET username = ?, name = ?, can_modify_inventory = ?, can_modify_products = ?, can_add_users = ? WHERE id = ?";
+        String updateUser = "UPDATE user SET username = ?, name = ?, "
+                + User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionDatabaseName() + " = ?, "
+                + User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName() + " = ?, "
+                + User.UserPermission.CAN_ADD_USERS.getPermissionDatabaseName() + " = ? " +
+                " WHERE id = ?";
         if (getJdbcTemplate() != null) {
             try {
-                int result = getJdbcTemplate().update(updateUser, objectToSave.getUsername(),
-                        objectToSave.getName(), objectToSave.checkUserPermission(User.CAN_MODIFY_INVENTORY) ? 1 : 0,
-                        objectToSave.checkUserPermission(User.CAN_MODIFY_PRODUCTS) ? 1 : 0,
-                        objectToSave.checkUserPermission(User.CAN_ADD_USERS) ? 1 : 0,
+                int result = getJdbcTemplate().update(updateUser, objectToSave.getUsername(), objectToSave.getName(),
+                        objectToSave.checkUserPermission(User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionName()) ? 1 : 0,
+                        objectToSave.checkUserPermission(User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName()) ? 1 : 0,
+                        objectToSave.checkUserPermission(User.UserPermission.CAN_ADD_USERS.getPermissionName()) ? 1 : 0,
                         objectToSave.getDatabaseKey().toString());
                 return result == 1;
             } catch (DataAccessException e) {

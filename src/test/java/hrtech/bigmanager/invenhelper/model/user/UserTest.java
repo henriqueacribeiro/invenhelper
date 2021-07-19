@@ -2,6 +2,7 @@ package hrtech.bigmanager.invenhelper.model.user;
 
 import hrtech.bigmanager.invenhelper.exception.InvalidBusinessIdentifier;
 import hrtech.bigmanager.invenhelper.exception.InvalidText;
+import hrtech.bigmanager.invenhelper.exception.InvalidUserPermission;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,7 @@ class UserTest {
     private String defaultName;
     private UserInformation defaultInformation;
 
-    private Map<String, Boolean> permissionMap;
+    private Map<User.UserPermission, Boolean> permissionMap;
 
     private User user;
 
@@ -41,16 +42,19 @@ class UserTest {
                 .toString();
     }
 
+    private boolean generateRandomBoolean() {
+        Random random = new Random();
+        int randomInt = random.ints(1, 1000).findFirst().getAsInt();
+        return randomInt % 2 == 0;
+    }
+
     @BeforeEach
     void setUp() {
-        Random random = new Random();
-        int permissionNumber = random.ints(0, 1000).findFirst().getAsInt();
-        boolean currentPermission = false;
+        int permissionNumber = User.UserPermission.values().length;
 
         permissionMap = new HashMap<>();
         for (int i = 0; i < permissionNumber; i++) {
-            permissionMap.put(generateString(), currentPermission);
-            currentPermission = !currentPermission;
+            permissionMap.put(User.UserPermission.values()[i], generateRandomBoolean());
         }
 
         defaultName = generateString();
@@ -92,27 +96,35 @@ class UserTest {
 
     @Test
     void addEntryToPermissionMapValidEntry() {
-        String permissionName = generateString();
+        User.UserPermission permission;
+        Random random = new Random();
+        int permissionNumber = random.ints(0, User.UserPermission.values().length - 1).findFirst().getAsInt();
+        permission = User.UserPermission.values()[permissionNumber];
+
+        String permissionName = permission.getPermissionName();
         user.addEntryToPermissionMap(permissionName, true);
         assertTrue(user.checkUserPermission(permissionName));
     }
 
     @Test
     void addEntryToPermissionMapInvalidEntry() {
-        assertThrows(InvalidText.class, () -> user.addEntryToPermissionMap("", true));
+        assertThrows(InvalidUserPermission.class, () -> user.addEntryToPermissionMap("", true));
     }
 
     @Test
     void checkUserPermissionExists() {
-        String permissionName;
+        User.UserPermission permission;
+        Random random = new Random();
+        int permissionNumber = random.ints(0, User.UserPermission.values().length - 1).findFirst().getAsInt();
+
         if (permissionMap.isEmpty()) {
-            permissionName = generateString();
-            user.addEntryToPermissionMap(permissionName, true);
-            assertTrue(user.checkUserPermission(permissionName));
+            permission = User.UserPermission.values()[permissionNumber];
+            user.addEntryToPermissionMap(permission.getPermissionName(), true);
+            assertTrue(user.checkUserPermission(permission.getPermissionName()));
         } else {
-            permissionName = permissionMap.keySet().stream().findFirst().get();
+            permission = permissionMap.keySet().stream().findFirst().get();
         }
-        assertEquals(permissionMap.get(permissionName), user.checkUserPermission(permissionName));
+        assertEquals(permissionMap.getOrDefault(permission, false), user.checkUserPermission(permission.getPermissionName()));
     }
 
     @Test
@@ -127,7 +139,7 @@ class UserTest {
         creationObject.put("name", defaultName);
 
         JSONArray permissionArray = new JSONArray();
-        for (Map.Entry<String, Boolean> entry : permissionMap.entrySet()) {
+        for (Map.Entry<User.UserPermission, Boolean> entry : permissionMap.entrySet()) {
             JSONObject permission = new JSONObject();
             permission.put("name", entry.getKey());
             permission.put("value", entry.getValue());

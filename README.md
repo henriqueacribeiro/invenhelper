@@ -29,16 +29,18 @@ Running the compose file creates an environment with a MySQL image with the data
 To run the compose file, run the command `docker-compose up`. To build only the image with the application, run `docker build -t invenhelper .` on the project directory.
 
 # Using the application
-While running the application, the following paths are available.
+While running the application, the following paths are available:
+
+## Product
 
 | URL      | Description | JSON Body
 | ----------- | ----------- | ------------ |
 | /product/getByID?identifier=`x` |  Obtain product by identifier | - 
-| /product/getAllIdentifiers   | Obtain all identifiers | ```{'name': 'x', 'description': 'y', identifier: 'z'} ```
-| /product/create   | Create a product | -
-| /product/decreaseQuantity?identifier=`X`&quantity=`Y`   | Decrease the product quantity | -
-| /product/increaseQuantity?identifier=`X`&quantity=`Y`   | Obtain all identifiers | -
-| /product/updateProduct   | Updates a product | ```{'name': 'x', 'description': 'y', identifier: 'z'} ``` (name and description optional)
+| /product/getAllIdentifiers   | Obtain all identifiers | -
+| /product/create   | Create a product | ```{'requiring_user': AUTHORIZED_USER, 'name': 'x', 'description': 'y', identifier: 'z'} ```
+| /product/decreaseQuantity?identifier=`X`&quantity=`Y`&requiring_user=`AUTHORIZED_USER`   | Decrease the product quantity | -
+| /product/increaseQuantity?identifier=`X`&quantity=`Y`&requiring_user=`AUTHORIZED_USER`   | Increase the product quantity | -
+| /product/updateProduct   | Updates a product | ```{'requiring_user': AUTHORIZED_USER, 'name': 'x', 'description': 'y', identifier: 'z'} ``` (name and description optional)
 
 ## API Documentation
 While running, navigate to `/doc.html` page will show the Swagger documentation.

@@ -119,6 +119,7 @@ class ProductControllerTest {
     @Test
     void createProduct() throws Exception {
         JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", defaultName);
         objectToInject.put("description", defaultDescription);
@@ -146,19 +147,19 @@ class ProductControllerTest {
         assertTrue(productService.insert(product));
 
         Response<Product> invalidProduct = new Response<>(false, "Product not found");
-        MvcResult requestResponse = mvc.perform(put("/product/increaseQuantity").param("identifier", "")
+        MvcResult requestResponse = mvc.perform(put("/product/increaseQuantity").param("requiring_user", "admin").param("identifier", "")
                 .param("quantity", String.valueOf(randomNumberToIncrease))).andExpect(status().is4xxClientError()).andReturn();
         JSONObject response = new JSONObject(requestResponse.getResponse().getContentAsString());
         assertEquals(invalidProduct.obtainJSONWithAllInfo().toString(), response.toString());
 
         Response<Product> negativeQuantity = new Response<>(false, "The number must be positive");
-        requestResponse = mvc.perform(put("/product/increaseQuantity").param("identifier", product.getProductBusinessKey())
+        requestResponse = mvc.perform(put("/product/increaseQuantity").param("requiring_user", "admin").param("identifier", product.getProductBusinessKey())
                 .param("quantity", String.valueOf(-5))).andExpect(status().is4xxClientError()).andReturn();
         response = new JSONObject(requestResponse.getResponse().getContentAsString());
         assertEquals(negativeQuantity.obtainJSONWithAllInfo().toString(), response.toString());
 
         Response<Product> finalResponse = new Response<>(true, "Quantity updated", product);
-        requestResponse = mvc.perform(put("/product/increaseQuantity").param("identifier", product.getProductBusinessKey())
+        requestResponse = mvc.perform(put("/product/increaseQuantity").param("requiring_user", "admin").param("identifier", product.getProductBusinessKey())
                 .param("quantity", String.valueOf(randomNumberToIncrease))).andExpect(status().is2xxSuccessful()).andReturn();
         response = new JSONObject(requestResponse.getResponse().getContentAsString());
         product.increaseQuantity(randomNumberToIncrease);
@@ -171,24 +172,24 @@ class ProductControllerTest {
 
         Response<Product> invalidProduct = new Response<>(false, "Product not found");
         MvcResult requestResponse = mvc.perform(put("/product/decreaseQuantity").param("identifier", "")
-                .param("quantity", String.valueOf(randomNumberToDecrease))).andExpect(status().is4xxClientError()).andReturn();
+                .param("quantity", String.valueOf(randomNumberToDecrease)).param("requiring_user", "admin")).andExpect(status().is4xxClientError()).andReturn();
         JSONObject response = new JSONObject(requestResponse.getResponse().getContentAsString());
         assertEquals(invalidProduct.obtainJSONWithAllInfo().toString(), response.toString());
 
         Response<Product> negativeQuantity = new Response<>(false, "The number must be positive");
-        requestResponse = mvc.perform(put("/product/decreaseQuantity").param("identifier", product.getProductBusinessKey())
+        requestResponse = mvc.perform(put("/product/decreaseQuantity").param("requiring_user", "admin").param("identifier", product.getProductBusinessKey())
                 .param("quantity", String.valueOf(-5))).andExpect(status().is4xxClientError()).andReturn();
         response = new JSONObject(requestResponse.getResponse().getContentAsString());
         assertEquals(negativeQuantity.obtainJSONWithAllInfo().toString(), response.toString());
 
         Response<Product> invalidQuantity = new Response<>(false, "Invalid quantity obtained while trying to decrease");
-        requestResponse = mvc.perform(put("/product/decreaseQuantity").param("identifier", product.getProductBusinessKey())
+        requestResponse = mvc.perform(put("/product/decreaseQuantity").param("requiring_user", "admin").param("identifier", product.getProductBusinessKey())
                 .param("quantity", String.valueOf(product.getQuantity() + 20))).andExpect(status().is4xxClientError()).andReturn();
         response = new JSONObject(requestResponse.getResponse().getContentAsString());
         assertEquals(invalidQuantity.obtainJSONWithAllInfo().toString(), response.toString());
 
         Response<Product> finalResponse = new Response<>(true, "Quantity updated", product);
-        requestResponse = mvc.perform(put("/product/decreaseQuantity").param("identifier", product.getProductBusinessKey())
+        requestResponse = mvc.perform(put("/product/decreaseQuantity").param("requiring_user", "admin").param("identifier", product.getProductBusinessKey())
                 .param("quantity", String.valueOf(randomNumberToDecrease))).andExpect(status().is2xxSuccessful()).andReturn();
         response = new JSONObject(requestResponse.getResponse().getContentAsString());
         product.decreaseQuantity(randomNumberToDecrease);

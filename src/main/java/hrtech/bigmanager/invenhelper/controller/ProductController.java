@@ -104,14 +104,16 @@ public class ProductController {
     @PutMapping(value = "increaseQuantity", produces = "application/json")
     @Operation(summary = "Increases the quantity of a product, given the quantity and the business identifier", parameters = {
             @Parameter(in = ParameterIn.PATH, name = "quantity", description = "Quantity to increase. Must be positive"),
-            @Parameter(in = ParameterIn.PATH, name = "identifier", description = "Product business identifier")
+            @Parameter(in = ParameterIn.PATH, name = "identifier", description = "Product business identifier"),
+            @Parameter(in = ParameterIn.PATH, name = "requiring_user", description = "User that requested the action")
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Quantity increased", content = @Content(schema = @Schema(implementation = Response.class))),
             @ApiResponse(responseCode = "400", description = "Error increasing quantity", content = @Content(schema = @Schema(implementation = Response.class)))
     })
-    public ResponseEntity<String> increaseQuantity(@RequestParam(value = "identifier") String businessIdentifier, @RequestParam(value = "quantity") int quantityToIncrease) {
-        Response<Product> response = service.increaseQuantity(businessIdentifier, quantityToIncrease);
+    public ResponseEntity<String> increaseQuantity(@RequestParam(value = "identifier") String businessIdentifier, @RequestParam(value = "quantity") int quantityToIncrease,
+                                                   @RequestParam(value = "requiring_user") String requiringUsername) {
+        Response<Product> response = service.increaseQuantity(businessIdentifier, quantityToIncrease, requiringUsername);
         if (response.isSuccess()) {
             return new ResponseEntity<>(response.obtainJSONWithAllInfo().toString(), HttpStatus.OK);
         } else {
@@ -122,14 +124,16 @@ public class ProductController {
     @PutMapping(value = "decreaseQuantity", produces = "application/json")
     @Operation(summary = "Decreases the quantity of a product, given the quantity and the business identifier", parameters = {
             @Parameter(in = ParameterIn.PATH, name = "quantity", description = "Quantity to decrease. Must be positive"),
-            @Parameter(in = ParameterIn.PATH, name = "businessIdentifier", description = "Product business identifier")
+            @Parameter(in = ParameterIn.PATH, name = "businessIdentifier", description = "Product business identifier"),
+            @Parameter(in = ParameterIn.PATH, name = "requiring_user", description = "User that requested the action")
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Quantity decreased", content = @Content(schema = @Schema(implementation = Response.class))),
             @ApiResponse(responseCode = "400", description = "Error decreasing quantity", content = @Content(schema = @Schema(implementation = Response.class)))
     })
-    public ResponseEntity<String> decreaseQuantity(@RequestParam(value = "identifier") String businessIdentifier, @RequestParam(value = "quantity") int quantityToDecrease) {
-        Response<Product> response = service.decreaseQuantity(businessIdentifier, quantityToDecrease);
+    public ResponseEntity<String> decreaseQuantity(@RequestParam(value = "identifier") String businessIdentifier, @RequestParam(value = "quantity") int quantityToDecrease,
+                                                   @RequestParam(value = "requiring_user") String requiringUsername) {
+        Response<Product> response = service.decreaseQuantity(businessIdentifier, quantityToDecrease, requiringUsername);
         if (response.isSuccess()) {
             return new ResponseEntity<>(response.obtainJSONWithAllInfo().toString(), HttpStatus.OK);
         } else {

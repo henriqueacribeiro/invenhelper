@@ -93,13 +93,7 @@ public class UserService implements IService<User, UserKey> {
     public Response<User> createNewUser(JSONObject objectOnBody) {
         String requiringUsername = objectOnBody.optString("requiring_user");
         try {
-            Optional<User> requiringUser = this.findByUsername(requiringUsername);
-            if (requiringUser.isEmpty()) {
-                throw new UserDoesNotExist("Requester username not found: " + requiringUsername);
-            }
-            if (!requiringUser.get().checkUserPermission(User.UserPermission.CAN_MODIFY_USERS.getPermissionName())) {
-                throw new UserNotAllowed(requiringUsername, "create user");
-            }
+            checkIfUserCanPerformAction(User.UserPermission.CAN_MODIFY_USERS, "create user", requiringUsername);
 
             User user = User.convertFromJSONToCreate(objectOnBody);
             if (this.findByUsername(user.getUsername()).isPresent()) {
@@ -213,6 +207,27 @@ public class UserService implements IService<User, UserKey> {
         } catch (UserNotAllowed | UserDoesNotExist ex) {
             logger.error(ex.getMessage());
             return new Response<>(false, ex.getMessage());
+        }
+    }
+
+    /**
+     * Method that checks if a user can perform an action
+     *
+     * @param permission        permission to be checked
+     * @param actionDescription action description
+     * @param usernameToCheck   username to be checked
+     * @throws UserNotAllowed        if the user is not allowed
+     * @throws UserDoesNotExist      if the username does not correspond to a user
+     * @throws InvalidUserPermission if the permission does not exist
+     */
+    protected void checkIfUserCanPerformAction(User.UserPermission permission, String actionDescription, String usernameToCheck) throws UserNotAllowed, UserDoesNotExist {
+        Optional<User> requiringUser = this.findByUsername(usernameToCheck);
+        if (requiringUser.isEmpty()) {
+            throw new UserDoesNotExist("Requester username not found: " + usernameToCheck);
+        }
+
+        if (!requiringUser.get().checkUserPermission(permission.getPermissionName())) {
+            throw new UserNotAllowed(usernameToCheck, actionDescription);
         }
     }
 }

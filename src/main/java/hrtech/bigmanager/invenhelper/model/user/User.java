@@ -19,6 +19,7 @@ public class User implements Domain<User, UserKey> {
 
     private final UserKey key;
     private final UserInformation information;
+
     public User(UserKey key, UserInformation information) {
         this.key = key;
         this.information = information;
@@ -179,6 +180,16 @@ public class User implements Domain<User, UserKey> {
             public String getPermissionDatabaseName() {
                 return "can_modify_inventory";
             }
+
+            /**
+             * Get permission description
+             *
+             * @return description of the permission
+             */
+            @Override
+            public String getDescription() {
+                return "modify inventory";
+            }
         },
         CAN_MODIFY_USERS {
             /**
@@ -200,6 +211,16 @@ public class User implements Domain<User, UserKey> {
             public String getPermissionDatabaseName() {
                 return "can_modify_users";
             }
+
+            /**
+             * Get permission description
+             *
+             * @return description of the permission
+             */
+            @Override
+            public String getDescription() {
+                return "modify user";
+            }
         },
         CAN_MODIFY_PRODUCTS {
             /**
@@ -220,6 +241,16 @@ public class User implements Domain<User, UserKey> {
             @Override
             public String getPermissionDatabaseName() {
                 return "can_modify_products";
+            }
+
+            /**
+             * Get permission description
+             *
+             * @return description of the permission
+             */
+            @Override
+            public String getDescription() {
+                return "modify product";
             }
         };
 
@@ -268,6 +299,15 @@ public class User implements Domain<User, UserKey> {
          */
         public String getPermissionDatabaseName() {
             return "NO_PERMISSION";
+        }
+
+        /**
+         * Get permission description
+         *
+         * @return description of the permission
+         */
+        public String getDescription() {
+            return "no permission";
         }
     }
 

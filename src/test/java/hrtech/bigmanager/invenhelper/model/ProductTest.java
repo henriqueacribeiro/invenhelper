@@ -72,7 +72,7 @@ class ProductTest {
 
     @Test
     void decreaseInvalidQuantity() {
-        assertThrows(InvalidQuantity.class, () -> product.decreaseQuantity(defaultGoodQuantity + randomNumberToDecrease));
+        assertThrows(InvalidQuantity.class, () -> product.decreaseQuantity(defaultGoodQuantity + defaultGoodQuantity));
     }
 
     @Test

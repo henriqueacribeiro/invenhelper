@@ -94,6 +94,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", defaultName);
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("requiring_user", "admin");
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertTrue(response.isSuccess());
@@ -111,6 +112,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", "");
         objectToInject.put("name", defaultName);
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("requiring_user", "admin");
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertFalse(response.isSuccess());
@@ -123,6 +125,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", "");
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("requiring_user", "admin");
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertFalse(response.isSuccess());
@@ -135,6 +138,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", defaultName);
         objectToInject.put("description", "");
+        objectToInject.put("requiring_user", "admin");
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertFalse(response.isSuccess());
@@ -147,6 +151,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", defaultName);
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("requiring_user", "admin");
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertTrue(response.isSuccess());
@@ -166,7 +171,7 @@ class ProductServiceTest {
     void increaseQuantityValid() {
         assertTrue(service.insert(product));
         product.increaseQuantity(randomNumberToIncrease);
-        Response<Product> methodResponse = service.increaseQuantity(defaultCode, randomNumberToIncrease);
+        Response<Product> methodResponse = service.increaseQuantity(defaultCode, randomNumberToIncrease, "admin");
         assertTrue(methodResponse.isSuccess());
         assertEquals(product, methodResponse.getObjectToReturn());
     }
@@ -175,7 +180,7 @@ class ProductServiceTest {
     void increaseQuantityNoProductFound() {
         assertTrue(service.insert(product));
         product.increaseQuantity(randomNumberToIncrease);
-        Response<Product> methodResponse = service.increaseQuantity("CODE", randomNumberToIncrease);
+        Response<Product> methodResponse = service.increaseQuantity("CODE", randomNumberToIncrease, "admin");
         assertFalse(methodResponse.isSuccess());
         assertEquals("Product not found", methodResponse.getAdditionalInformation());
     }
@@ -184,7 +189,7 @@ class ProductServiceTest {
     void decreaseQuantityValid() {
         assertTrue(service.insert(product));
         product.decreaseQuantity(randomNumberToDecrease);
-        Response<Product> methodResponse = service.decreaseQuantity(defaultCode, randomNumberToDecrease);
+        Response<Product> methodResponse = service.decreaseQuantity(defaultCode, randomNumberToDecrease, "admin");
         assertTrue(methodResponse.isSuccess());
         assertEquals(product, methodResponse.getObjectToReturn());
     }
@@ -193,7 +198,7 @@ class ProductServiceTest {
     void decreaseQuantityNoProductFound() {
         assertTrue(service.insert(product));
         product.decreaseQuantity(randomNumberToDecrease);
-        Response<Product> methodResponse = service.decreaseQuantity("TEST", randomNumberToDecrease);
+        Response<Product> methodResponse = service.decreaseQuantity("TEST", randomNumberToDecrease, "admin");
         assertFalse(methodResponse.isSuccess());
         assertEquals("Product not found", methodResponse.getAdditionalInformation());
     }
@@ -202,7 +207,7 @@ class ProductServiceTest {
     void decreaseQuantityInvalidQuantity() {
         assertTrue(service.insert(product));
         product.decreaseQuantity(randomNumberToDecrease);
-        Response<Product> methodResponse = service.decreaseQuantity(defaultCode, defaultGoodQuantity + 5);
+        Response<Product> methodResponse = service.decreaseQuantity(defaultCode, defaultGoodQuantity + 5, "admin");
         assertFalse(methodResponse.isSuccess());
         assertEquals("Invalid quantity obtained while trying to decrease", methodResponse.getAdditionalInformation());
     }
@@ -215,6 +220,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", newName);
         objectToInject.put("description", newDescription);
+        objectToInject.put("requiring_user", "admin");
 
         assertTrue(service.insert(product));
         Response<Product> updateInfo = service.updateProductInformation(objectToInject);
@@ -245,6 +251,7 @@ class ProductServiceTest {
     void updateProductInformationValidInformationNoInfoToChange() {
         JSONObject objectToInject = new JSONObject();
         objectToInject.put("identifier", defaultCode);
+        objectToInject.put("requiring_user", "admin");
 
         assertTrue(service.insert(product));
 
@@ -264,6 +271,7 @@ class ProductServiceTest {
         JSONObject objectToInject = new JSONObject();
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", "");
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("description", "Test");
 
         assertTrue(service.insert(product));
@@ -285,6 +293,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", defaultName);
         objectToInject.put("description", "");
+        objectToInject.put("requiring_user", "admin");
 
         assertTrue(service.insert(product));
 
@@ -314,6 +323,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode + "TESTING");
         objectToInject.put("name", defaultName);
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("requiring_user", "admin");
         Response<Product> p = service.createNewProduct(objectToInject);
         assertTrue(p.isSuccess());
         assertEquals(Arrays.asList(product.getProductBusinessKey(), p.getObjectToReturn().getProductBusinessKey()), service.findListOfIdentifiers());

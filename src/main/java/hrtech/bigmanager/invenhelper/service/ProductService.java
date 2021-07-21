@@ -1,13 +1,11 @@
 package hrtech.bigmanager.invenhelper.service;
 
-import hrtech.bigmanager.invenhelper.exception.InvalidBusinessIdentifier;
-import hrtech.bigmanager.invenhelper.exception.InvalidQuantity;
-import hrtech.bigmanager.invenhelper.exception.InvalidRepresentationOfConceptOnJSON;
-import hrtech.bigmanager.invenhelper.exception.InvalidText;
+import hrtech.bigmanager.invenhelper.exception.*;
 import hrtech.bigmanager.invenhelper.model.DomainKey;
 import hrtech.bigmanager.invenhelper.model.Product;
 import hrtech.bigmanager.invenhelper.model.ProductKey;
 import hrtech.bigmanager.invenhelper.model.Response;
+import hrtech.bigmanager.invenhelper.model.user.User;
 import hrtech.bigmanager.invenhelper.repository.ProductRepository;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -27,10 +25,16 @@ public class ProductService implements IService<Product, ProductKey> {
 
     private final Logger logger = LoggerFactory.getLogger(ProductService.class);
     private ProductRepository productRepository;
+    private UserService userService;
 
     @Autowired
     public void setProductRepository(ProductRepository productRepository) {
         this.productRepository = productRepository;
+    }
+
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     /**
@@ -104,6 +108,9 @@ public class ProductService implements IService<Product, ProductKey> {
      */
     public Response<Product> createNewProduct(JSONObject objectOnBody) {
         try {
+            String requiringUsername = objectOnBody.optString("requiring_user");
+            userService.checkIfUserCanPerformAction(User.UserPermission.CAN_MODIFY_PRODUCTS,"add product", requiringUsername);
+
             Product product = Product.convertFromJSONToCreate(objectOnBody);
             if (this.findByBusinessKey(product.getProductBusinessKey()).isPresent()) {
                 throw new IllegalArgumentException("A product with the same business identifier is already registered");
@@ -114,7 +121,7 @@ public class ProductService implements IService<Product, ProductKey> {
         } catch (InvalidRepresentationOfConceptOnJSON e) {
             logger.error("Invalid JSON object to be converted to Product: " + e.getLocalizedMessage());
             return new Response<>(false, "Error converting the JSON into a Product. Check the request");
-        } catch (IllegalArgumentException e) {
+        } catch (UserNotAllowed | IllegalArgumentException e) {
             logger.error(e.getLocalizedMessage());
             return new Response<>(false, e.getLocalizedMessage());
         }
@@ -125,29 +132,37 @@ public class ProductService implements IService<Product, ProductKey> {
      *
      * @param businessIdentifier product identifier
      * @param quantity           quantity to be increased
+     * @param requiringUsername  username that requested the action
      * @return Response with info about the success of the operation
      */
-    public Response<Product> increaseQuantity(String businessIdentifier, int quantity) {
-        Optional<Product> optionalProduct = findByBusinessKey(businessIdentifier);
-        if (optionalProduct.isEmpty()) {
-            return new Response<>(false, "Product not found");
-        }
-
-        if (quantity < 0) {
-            return new Response<>(false, "The number must be positive");
-        }
-
-        Product product = optionalProduct.get();
+    public Response<Product> increaseQuantity(String businessIdentifier, int quantity, String requiringUsername) {
         try {
-            product.increaseQuantity(quantity);
-        } catch (InvalidQuantity iq) {
-            return new Response<>(false, "Invalid quantity obtained while trying to increase");
-        }
+            userService.checkIfUserCanPerformAction(User.UserPermission.CAN_MODIFY_INVENTORY,"increase inventory", requiringUsername);
 
-        if (this.save(product)) {
-            return new Response<>(true, "Quantity updated", product);
-        } else {
-            return new Response<>(false, "Error updating database", product);
+            Optional<Product> optionalProduct = findByBusinessKey(businessIdentifier);
+            if (optionalProduct.isEmpty()) {
+                return new Response<>(false, "Product not found");
+            }
+
+            if (quantity < 0) {
+                return new Response<>(false, "The number must be positive");
+            }
+
+            Product product = optionalProduct.get();
+            try {
+                product.increaseQuantity(quantity);
+            } catch (InvalidQuantity iq) {
+                return new Response<>(false, "Invalid quantity obtained while trying to increase");
+            }
+
+            if (this.save(product)) {
+                return new Response<>(true, "Quantity updated", product);
+            } else {
+                return new Response<>(false, "Error updating database", product);
+            }
+        } catch (UserNotAllowed | UserDoesNotExist ex) {
+            logger.error(ex.getMessage());
+            return new Response<>(false, ex.getMessage());
         }
     }
 
@@ -158,27 +173,34 @@ public class ProductService implements IService<Product, ProductKey> {
      * @param quantity           quantity to be increased
      * @return Response with info about the success of the operation
      */
-    public Response<Product> decreaseQuantity(String businessIdentifier, int quantity) {
-        Optional<Product> optionalProduct = findByBusinessKey(businessIdentifier);
-        if (optionalProduct.isEmpty()) {
-            return new Response<>(false, "Product not found");
-        }
-
-        if (quantity < 0) {
-            return new Response<>(false, "The number must be positive");
-        }
-
-        Product product = optionalProduct.get();
+    public Response<Product> decreaseQuantity(String businessIdentifier, int quantity, String requiringUsername) {
         try {
-            product.decreaseQuantity(quantity);
-        } catch (InvalidQuantity iq) {
-            return new Response<>(false, "Invalid quantity obtained while trying to decrease");
-        }
+            userService.checkIfUserCanPerformAction(User.UserPermission.CAN_MODIFY_INVENTORY,"decrease inventory", requiringUsername);
 
-        if (this.save(product)) {
-            return new Response<>(true, "Quantity updated", product);
-        } else {
-            return new Response<>(false, "Error updating database", product);
+            Optional<Product> optionalProduct = findByBusinessKey(businessIdentifier);
+            if (optionalProduct.isEmpty()) {
+                return new Response<>(false, "Product not found");
+            }
+
+            if (quantity < 0) {
+                return new Response<>(false, "The number must be positive");
+            }
+
+            Product product = optionalProduct.get();
+            try {
+                product.decreaseQuantity(quantity);
+            } catch (InvalidQuantity iq) {
+                return new Response<>(false, "Invalid quantity obtained while trying to decrease");
+            }
+
+            if (this.save(product)) {
+                return new Response<>(true, "Quantity updated", product);
+            } else {
+                return new Response<>(false, "Error updating database", product);
+            }
+        }  catch (UserNotAllowed | UserDoesNotExist ex) {
+            logger.error(ex.getMessage());
+            return new Response<>(false, ex.getMessage());
         }
     }
 
@@ -196,6 +218,9 @@ public class ProductService implements IService<Product, ProductKey> {
         }
 
         try {
+            String requiringUsername = info.optString("requiring_user");
+            userService.checkIfUserCanPerformAction(User.UserPermission.CAN_MODIFY_PRODUCTS,"update product", requiringUsername);
+
             boolean hasChanges = false;
 
             Product oldProduct = productToUpdate.get();
@@ -216,6 +241,9 @@ public class ProductService implements IService<Product, ProductKey> {
             } else {
                 return new Response<>(false, "Error updating database", productToUpdate.get());
             }
+        } catch (UserNotAllowed | UserDoesNotExist ex) {
+            logger.error(ex.getMessage());
+            return new Response<>(false, ex.getMessage());
         } catch (InvalidText it) {
             return new Response<>(false, it.getLocalizedMessage());
         } catch (IllegalArgumentException e) {

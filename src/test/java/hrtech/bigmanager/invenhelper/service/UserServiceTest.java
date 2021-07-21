@@ -66,7 +66,7 @@ class UserServiceTest {
 
         user = new User(defaultKey, defaultInformation);
         user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName(), generateRandomBoolean());
-        user.addEntryToPermissionMap(User.UserPermission.CAN_ADD_USERS.getPermissionName(), generateRandomBoolean());
+        user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_USERS.getPermissionName(), generateRandomBoolean());
         user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionName(), generateRandomBoolean());
     }
 
@@ -99,7 +99,7 @@ class UserServiceTest {
 
         User user = new User(key, information);
         user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName(), generateRandomBoolean());
-        user.addEntryToPermissionMap(User.UserPermission.CAN_ADD_USERS.getPermissionName(), generateRandomBoolean());
+        user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_USERS.getPermissionName(), generateRandomBoolean());
         user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionName(), generateRandomBoolean());
 
         Map<User.UserPermission, Boolean> permissions = new HashMap<>();
@@ -108,6 +108,7 @@ class UserServiceTest {
         }
 
         JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("username", username);
         objectToInject.put("name", name);
         JSONArray arrays = new JSONArray();
@@ -140,6 +141,7 @@ class UserServiceTest {
         User user = new User(key, information);
 
         JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("username", username);
         objectToInject.put("name", name);
 
@@ -164,6 +166,7 @@ class UserServiceTest {
         String username = "";
 
         JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("username", generateString());
         objectToInject.put("name", "");
 
@@ -179,6 +182,7 @@ class UserServiceTest {
         String username = "";
 
         JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("username", "");
         objectToInject.put("name", name);
 
@@ -194,15 +198,42 @@ class UserServiceTest {
         String username = user.getUsername();
 
         JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("username", username);
         objectToInject.put("name", generateString());
 
         Response<User> response = service.createNewUser(objectToInject);
         assertFalse(response.isSuccess());
-        assertEquals("A user with the same business identifier is already registered", response.getAdditionalInformation());
+        assertEquals("A user with the same username is already registered", response.getAdditionalInformation());
         Optional<User> userOpt = service.findByUsername(username);
         assertTrue(userOpt.isPresent());
         assertEquals(user, userOpt.get());
+    }
+
+    @Test
+    void createNewUserNoPermissionToUpdate() {
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
+        objectToInject.put("username", "admin");
+        objectToInject.put("name", "adminChanged");
+        JSONArray arrays = new JSONArray();
+        JSONObject permissionToChange = new JSONObject();
+        permissionToChange.put("name", User.UserPermission.CAN_MODIFY_USERS);
+        permissionToChange.put("value", false);
+        arrays.put(permissionToChange);
+        objectToInject.put("permissions", arrays);
+        assertTrue(service.updateUserInformation(objectToInject).isSuccess());
+
+        objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
+        objectToInject.put("name", generateString());
+        objectToInject.put("username", user.getUsername());
+        objectToInject.put("permissions", arrays);
+
+        Response<User> response = service.createNewUser(objectToInject);
+        assertFalse(response.isSuccess());
+        Optional<User> foundUser = service.findByUsername(user.getUsername());
+        assertFalse(foundUser.isPresent());
     }
 
     @Test
@@ -212,6 +243,7 @@ class UserServiceTest {
         String username = user.getUsername();
 
         JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("username", username);
         objectToInject.put("name", name);
 
@@ -233,6 +265,7 @@ class UserServiceTest {
         String username = user.getUsername();
 
         JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("username", username);
         objectToInject.put("name", name);
         JSONArray arrays = new JSONArray();
@@ -262,6 +295,7 @@ class UserServiceTest {
         String username = user.getUsername();
 
         JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
         objectToInject.put("username", "");
         objectToInject.put("name", name);
 
@@ -272,5 +306,104 @@ class UserServiceTest {
         Optional<User> userOnDatabase = service.findByUsername(username);
         assertTrue(userOnDatabase.isPresent());
         assertEquals(user, userOnDatabase.get());
+    }
+
+    @Test
+    void updateUserInformationNoPermissionToUpdate() {
+        assertTrue(service.insert(user));
+
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
+        objectToInject.put("username", "admin");
+        objectToInject.put("name", "adminChanged");
+        JSONArray arrays = new JSONArray();
+        JSONObject permissionToChange = new JSONObject();
+        permissionToChange.put("name", User.UserPermission.CAN_MODIFY_USERS);
+        permissionToChange.put("value", false);
+        arrays.put(permissionToChange);
+        objectToInject.put("permissions", arrays);
+        assertTrue(service.updateUserInformation(objectToInject).isSuccess());
+
+        objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
+        objectToInject.put("name", generateString());
+        objectToInject.put("username", user.getUsername());
+
+        Response<User> response = service.updateUserInformation(objectToInject);
+        assertFalse(response.isSuccess());
+        Optional<User> foundUser = service.findByUsername(user.getUsername());
+        assertTrue(foundUser.isPresent());
+        assertNotEquals(objectToInject.get("name"), foundUser.get().getName());
+        assertEquals(user.getName(), foundUser.get().getName());
+    }
+
+    @Test
+    void deleteUserSelfDelete() {
+        assertTrue(service.insert(user));
+        Optional<User> registeredUser = service.findByUsername(user.getUsername());
+        assertTrue(registeredUser.isPresent());
+
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", user.getUsername());
+        objectToInject.put("user_to_delete", user.getUsername());
+
+        Response<User> response = service.deleteUser(objectToInject);
+        assertTrue(response.isSuccess());
+        Optional<User> notFoundUser = service.findByUsername(user.getUsername());
+        assertTrue(notFoundUser.isEmpty());
+    }
+
+    @Test
+    void deleteUserAdminDelete() {
+        assertTrue(service.insert(user));
+        Optional<User> registeredUser = service.findByUsername(user.getUsername());
+        assertTrue(registeredUser.isPresent());
+
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
+        objectToInject.put("user_to_delete", user.getUsername());
+
+        Response<User> response = service.deleteUser(objectToInject);
+        assertTrue(response.isSuccess());
+        Optional<User> notFoundUser = service.findByUsername(user.getUsername());
+        assertTrue(notFoundUser.isEmpty());
+    }
+
+    @Test
+    void deleteUserUserToDeleteNotFound() {
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
+        objectToInject.put("user_to_delete", user.getUsername());
+
+        Response<User> response = service.deleteUser(objectToInject);
+        assertFalse(response.isSuccess());
+        Optional<User> foundUser = service.findByUsername(user.getUsername());
+        assertFalse(foundUser.isPresent());
+    }
+
+    @Test
+    void deleteUserNoPermissionToDelete() {
+        assertTrue(service.insert(user));
+
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
+        objectToInject.put("username", "admin");
+        objectToInject.put("name", "adminChanged");
+        JSONArray arrays = new JSONArray();
+        JSONObject permissionToChange = new JSONObject();
+        permissionToChange.put("name", User.UserPermission.CAN_MODIFY_USERS);
+        permissionToChange.put("value", false);
+        arrays.put(permissionToChange);
+        objectToInject.put("permissions", arrays);
+        assertTrue(service.updateUserInformation(objectToInject).isSuccess());
+
+        objectToInject = new JSONObject();
+        objectToInject.put("requiring_user", "admin");
+        objectToInject.put("user_to_delete", user.getUsername());
+
+        Response<User> response = service.deleteUser(objectToInject);
+        assertFalse(response.isSuccess());
+        Optional<User> foundUser = service.findByUsername(user.getUsername());
+        assertTrue(foundUser.isPresent());
     }
 }

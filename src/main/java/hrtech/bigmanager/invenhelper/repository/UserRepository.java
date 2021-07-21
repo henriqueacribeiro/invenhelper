@@ -56,7 +56,7 @@ public class UserRepository extends JdbcDaoSupport implements IRepository<User, 
 
             User newUser = new User(key, information);
 
-            for (User.UserPermission permission: User.UserPermission.getListOfExistingPermissions()) {
+            for (User.UserPermission permission : User.UserPermission.getListOfExistingPermissions()) {
                 newUser.addEntryToPermissionMap(permission.getPermissionName(), resultSet.getInt("user." + permission.getPermissionDatabaseName()) == 1);
             }
 
@@ -79,13 +79,13 @@ public class UserRepository extends JdbcDaoSupport implements IRepository<User, 
         String createUsers = "INSERT INTO user(id, username, name, "
                 + User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionDatabaseName() + ", "
                 + User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionDatabaseName() + ", "
-                + User.UserPermission.CAN_ADD_USERS.getPermissionDatabaseName() + ") VALUES (?, ?, ?, ?, ?, ?)";
+                + User.UserPermission.CAN_MODIFY_USERS.getPermissionDatabaseName() + ") VALUES (?, ?, ?, ?, ?, ?)";
         if (getJdbcTemplate() != null) {
             try {
                 int result = getJdbcTemplate().update(createUsers, userToCreate.getDatabaseKey(), userToCreate.getUsername(),
                         userToCreate.getName(), userToCreate.checkUserPermission(User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionName()) ? 1 : 0,
                         userToCreate.checkUserPermission(User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName()) ? 1 : 0,
-                        userToCreate.checkUserPermission(User.UserPermission.CAN_ADD_USERS.getPermissionName()) ? 1 : 0);
+                        userToCreate.checkUserPermission(User.UserPermission.CAN_MODIFY_USERS.getPermissionName()) ? 1 : 0);
                 return result == 1;
             } catch (DataAccessException e) {
                 logger.error("Error while manipulating data: " + e.getLocalizedMessage());
@@ -107,15 +107,15 @@ public class UserRepository extends JdbcDaoSupport implements IRepository<User, 
     public boolean save(User objectToSave) {
         String updateUser = "UPDATE user SET username = ?, name = ?, "
                 + User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionDatabaseName() + " = ?, "
-                + User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName() + " = ?, "
-                + User.UserPermission.CAN_ADD_USERS.getPermissionDatabaseName() + " = ? " +
+                + User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionDatabaseName() + " = ?, "
+                + User.UserPermission.CAN_MODIFY_USERS.getPermissionDatabaseName() + " = ? " +
                 " WHERE id = ?";
         if (getJdbcTemplate() != null) {
             try {
                 int result = getJdbcTemplate().update(updateUser, objectToSave.getUsername(), objectToSave.getName(),
                         objectToSave.checkUserPermission(User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionName()) ? 1 : 0,
                         objectToSave.checkUserPermission(User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName()) ? 1 : 0,
-                        objectToSave.checkUserPermission(User.UserPermission.CAN_ADD_USERS.getPermissionName()) ? 1 : 0,
+                        objectToSave.checkUserPermission(User.UserPermission.CAN_MODIFY_USERS.getPermissionName()) ? 1 : 0,
                         objectToSave.getDatabaseKey().toString());
                 return result == 1;
             } catch (DataAccessException e) {
@@ -166,6 +166,28 @@ public class UserRepository extends JdbcDaoSupport implements IRepository<User, 
         } else {
             logger.error("Invalid JDBC template instance");
             return Optional.empty();
+        }
+    }
+
+    /**
+     * Method that deletes a user from the database using its identifier
+     *
+     * @param objectToDelete entity to be deleted
+     * @return true on success; false otherwise
+     */
+    public boolean delete(User objectToDelete) {
+        String deleteUser = "DELETE FROM user WHERE id = ?";
+        if (getJdbcTemplate() != null) {
+            try {
+                int result = getJdbcTemplate().update(deleteUser, objectToDelete.getDatabaseKey().toString());
+                return result == 1;
+            } catch (DataAccessException e) {
+                logger.error("Error while manipulating data: " + e.getLocalizedMessage());
+                return false;
+            }
+        } else {
+            logger.error("Error while connecting to the database to delete a product");
+            return false;
         }
     }
 }

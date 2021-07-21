@@ -16,12 +16,12 @@ public class InvalidBusinessIdentifier extends IllegalArgumentException {
     }
 
     /**
-     * Exception constructor that accepts the invalid key to the message
+     * Exception constructor that accepts the error message
      *
-     * @param invalidKey invalidmessage
+     * @param errorMessage invalidmessage
      */
-    public InvalidBusinessIdentifier(String invalidKey) {
-        super(invalidMessage + (invalidKey.isBlank() ? ": " + invalidKey : ""));
+    public InvalidBusinessIdentifier(String errorMessage) {
+        super((!errorMessage.isBlank() ? errorMessage : invalidMessage));
     }
 
 }

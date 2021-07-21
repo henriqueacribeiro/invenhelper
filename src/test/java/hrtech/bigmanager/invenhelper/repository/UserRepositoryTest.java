@@ -15,8 +15,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Sql(scripts = "classpath:databaseinit.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @SpringBootTest(classes = InvenHelperApplication.class)
@@ -64,7 +63,7 @@ class UserRepositoryTest {
 
         user = new User(defaultKey, defaultInformation);
         user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_PRODUCTS.getPermissionName(), generateRandomBoolean());
-        user.addEntryToPermissionMap(User.UserPermission.CAN_ADD_USERS.getPermissionName(), generateRandomBoolean());
+        user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_USERS.getPermissionName(), generateRandomBoolean());
         user.addEntryToPermissionMap(User.UserPermission.CAN_MODIFY_INVENTORY.getPermissionName(), generateRandomBoolean());
     }
 
@@ -99,5 +98,24 @@ class UserRepositoryTest {
         assertTrue(obtainedUser.isPresent());
         assertEquals(user, obtainedUser.get());
         assertTrue(user.sameAs(obtainedUser.get()));
+    }
+
+    @Test
+    void deleteUserValid() {
+        assertTrue(repository.insert(user));
+        Optional<User> obtainedUser = repository.findByUsername(defaultKey);
+        assertTrue(obtainedUser.isPresent());
+        assertTrue(repository.delete(obtainedUser.get()));
+        obtainedUser = repository.findByUsername(defaultKey);
+        assertFalse(obtainedUser.isPresent());
+        obtainedUser = repository.findById(defaultKey);
+        assertFalse(obtainedUser.isPresent());
+    }
+
+    @Test
+    void deleteUserNonExistingUser() {
+        Optional<User> obtainedUser = repository.findByUsername(defaultKey);
+        assertFalse(obtainedUser.isPresent());
+        assertFalse(repository.delete(user));
     }
 }

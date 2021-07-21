@@ -1,8 +1,6 @@
 package hrtech.bigmanager.invenhelper.service;
 
-import hrtech.bigmanager.invenhelper.exception.InvalidBusinessIdentifier;
-import hrtech.bigmanager.invenhelper.exception.InvalidRepresentationOfConceptOnJSON;
-import hrtech.bigmanager.invenhelper.exception.InvalidText;
+import hrtech.bigmanager.invenhelper.exception.*;
 import hrtech.bigmanager.invenhelper.model.DomainKey;
 import hrtech.bigmanager.invenhelper.model.Response;
 import hrtech.bigmanager.invenhelper.model.user.User;
@@ -93,10 +91,19 @@ public class UserService implements IService<User, UserKey> {
      * @return Response object with info about the success of the operation
      */
     public Response<User> createNewUser(JSONObject objectOnBody) {
+        String requiringUsername = objectOnBody.optString("requiring_user");
         try {
+            Optional<User> requiringUser = this.findByUsername(requiringUsername);
+            if (requiringUser.isEmpty()) {
+                throw new UserDoesNotExist("Requester username not found: " + requiringUsername);
+            }
+            if (!requiringUser.get().checkUserPermission(User.UserPermission.CAN_MODIFY_USERS.getPermissionName())) {
+                throw new UserNotAllowed(requiringUsername, "create user");
+            }
+
             User user = User.convertFromJSONToCreate(objectOnBody);
             if (this.findByUsername(user.getUsername()).isPresent()) {
-                throw new IllegalArgumentException("A user with the same business identifier is already registered");
+                throw new InvalidBusinessIdentifier("A user with the same username is already registered");
             }
 
             boolean answer = this.insert(user);
@@ -104,7 +111,7 @@ public class UserService implements IService<User, UserKey> {
         } catch (InvalidRepresentationOfConceptOnJSON e) {
             logger.error("Invalid JSON object to be converted to User: " + e.getLocalizedMessage());
             return new Response<>(false, "Error converting the JSON into a User. Check the request");
-        } catch (IllegalArgumentException e) {
+        } catch (UserNotAllowed | InvalidBusinessIdentifier e) {
             logger.error(e.getLocalizedMessage());
             return new Response<>(false, e.getLocalizedMessage());
         }
@@ -113,17 +120,26 @@ public class UserService implements IService<User, UserKey> {
     /**
      * Method that updates the user information (username, name and permissions).
      *
-     * @param info JSON object with info to update. It must contain the 'username', 'name' and 'permissions' are optional
+     * @param info JSON object with info to update. It must contain the 'requiring_user' and 'username'; 'name' and 'permissions' are optional
      * @return Response with info about the success of the operation
      */
     public Response<User> updateUserInformation(JSONObject info) {
+        String requiringUsername = info.optString("requiring_user");
         String username = info.optString("username", "");
-        Optional<User> userToUpdate = findByUsername(username);
-        if (userToUpdate.isEmpty()) {
-            return new Response<>(false, "User not found");
-        }
-
         try {
+            Optional<User> requiringUser = this.findByUsername(requiringUsername);
+            if (requiringUser.isEmpty()) {
+                throw new UserDoesNotExist("Requester username not found: " + requiringUsername);
+            }
+            if (!requiringUser.get().checkUserPermission(User.UserPermission.CAN_MODIFY_USERS.getPermissionName()) && !username.equals(requiringUsername)) {
+                throw new UserNotAllowed(requiringUsername, "update user");
+            }
+
+            Optional<User> userToUpdate = findByUsername(username);
+            if (userToUpdate.isEmpty()) {
+                return new Response<>(false, "User not found");
+            }
+
             boolean hasChanges = false;
 
             User oldUser = userToUpdate.get();
@@ -153,9 +169,50 @@ public class UserService implements IService<User, UserKey> {
             }
         } catch (InvalidText it) {
             return new Response<>(false, it.getLocalizedMessage());
+        } catch (UserNotAllowed | UserDoesNotExist ex) {
+            logger.error(ex.getMessage());
+            return new Response<>(false, ex.getMessage());
         } catch (IllegalArgumentException e) {
             logger.error(e.getLocalizedMessage());
             return new Response<>(false, "Error while updating product information");
+        }
+    }
+
+
+    /**
+     * Method that deletes a user from the database, given a JSON object with the requiring user and the user to delete
+     * <p>
+     * It is checked the permission of the requiring user (or if corresponds to the user to delete)
+     *
+     * @param info JSONObject with two keys: requiring_user and user_to_delete
+     * @return Response with info about the operation
+     */
+    public Response<User> deleteUser(JSONObject info) {
+        String requiringUsername = info.optString("requiring_user");
+        String usernameToDelete = info.optString("user_to_delete");
+
+        try {
+            Optional<User> requiringUser = this.findByUsername(requiringUsername);
+            if (requiringUser.isEmpty()) {
+                throw new UserDoesNotExist("Requester username not found: " + requiringUsername);
+            }
+            if (!requiringUser.get().checkUserPermission(User.UserPermission.CAN_MODIFY_USERS.getPermissionName()) && !usernameToDelete.equals(requiringUsername)) {
+                throw new UserNotAllowed(requiringUsername, "delete user");
+            }
+
+            Optional<User> userToDelete = this.findByUsername(usernameToDelete);
+            if (userToDelete.isEmpty()) {
+                throw new UserDoesNotExist("Username to delete not found: " + requiringUsername);
+            }
+
+            if (userRepository.delete(userToDelete.get())) {
+                return new Response<>(true);
+            } else {
+                return new Response<>(false, "Error while deleting user");
+            }
+        } catch (UserNotAllowed | UserDoesNotExist ex) {
+            logger.error(ex.getMessage());
+            return new Response<>(false, ex.getMessage());
         }
     }
 }

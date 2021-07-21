@@ -180,7 +180,7 @@ public class User implements Domain<User, UserKey> {
                 return "can_modify_inventory";
             }
         },
-        CAN_ADD_USERS {
+        CAN_MODIFY_USERS {
             /**
              * Get permission name
              *
@@ -188,7 +188,7 @@ public class User implements Domain<User, UserKey> {
              */
             @Override
             public String getPermissionName() {
-                return "CAN_ADD_USERS";
+                return "CAN_MODIFY_USERS";
             }
 
             /**
@@ -198,7 +198,7 @@ public class User implements Domain<User, UserKey> {
              */
             @Override
             public String getPermissionDatabaseName() {
-                return "can_add_users";
+                return "can_modify_users";
             }
         },
         CAN_MODIFY_PRODUCTS {

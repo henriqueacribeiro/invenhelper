@@ -119,11 +119,12 @@ public class Product implements Domain<Product, ProductKey> {
         String productInternalKey = jsonObject.optString("identifier", "");
         String productName = jsonObject.optString("name", "");
         String productDescription = jsonObject.optString("description", "");
+        int quantity = jsonObject.optInt("quantity", 0);
 
         try {
             ProductKey key = new ProductKey(UUID.randomUUID(), productInternalKey);
             ProductInformation info = new ProductInformation(productName, productDescription);
-            Quantity quantityDomain = new Quantity(0);
+            Quantity quantityDomain = new Quantity(quantity);
             return new Product(key, info, quantityDomain);
         } catch (InvalidText it) {
             throw new InvalidRepresentationOfConceptOnJSON("Invalid text found (description or name");

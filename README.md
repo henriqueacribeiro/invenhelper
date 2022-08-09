@@ -34,8 +34,8 @@ While running the application, the following paths are available.
 | URL      | Description | JSON Body
 | ----------- | ----------- | ------------ |
 | /product/getByID?identifier=`x` |  Obtain product by identifier | - 
-| /product/getAllIdentifiers   | Obtain all identifiers | ```{'name': 'x', 'description': 'y', identifier: 'z'} ```
-| /product/create   | Create a product | -
+| /product/getAllIdentifiers   | Obtain all identifiers | -
+| /product/create   | Create a product | ```{'name': 'x', 'description': 'y', identifier: 'z', quantity: 'xx'} ``` (quantity is optional)
 | /product/decreaseQuantity?identifier=`X`&quantity=`Y`   | Decrease the product quantity | -
 | /product/increaseQuantity?identifier=`X`&quantity=`Y`   | Obtain all identifiers | -
 | /product/updateProduct   | Updates a product | ```{'name': 'x', 'description': 'y', identifier: 'z'} ``` (name and description optional)

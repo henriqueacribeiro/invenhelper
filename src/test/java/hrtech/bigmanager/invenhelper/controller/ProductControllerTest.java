@@ -122,6 +122,7 @@ class ProductControllerTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", defaultName);
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("quantity", defaultQuantity);
 
         MvcResult requestResponse = mvc.perform(post("/product/create").content(objectToInject.toString())).andExpect(status().is2xxSuccessful()).andReturn();
         JSONObject response = new JSONObject(requestResponse.getResponse().getContentAsString());

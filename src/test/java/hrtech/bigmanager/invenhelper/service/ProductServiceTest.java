@@ -94,6 +94,24 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", defaultName);
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("quantity", defaultQuantity);
+
+        Response<Product> response = service.createNewProduct(objectToInject);
+        assertTrue(response.isSuccess());
+        assertEquals("Success creating the product", response.getAdditionalInformation());
+
+        Product productObtained = response.getObjectToReturn();
+        Optional<Product> productOnDatabase = service.findById(productObtained.getProductID());
+        assertTrue(productOnDatabase.isPresent());
+        assertEquals(productOnDatabase.get(), productObtained);
+    }
+
+    @Test
+    void createNewProductNoQuantity() {
+        JSONObject objectToInject = new JSONObject();
+        objectToInject.put("identifier", defaultCode);
+        objectToInject.put("name", defaultName);
+        objectToInject.put("description", defaultDescription);
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertTrue(response.isSuccess());
@@ -111,6 +129,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", "");
         objectToInject.put("name", defaultName);
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("quantity", defaultQuantity);
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertFalse(response.isSuccess());
@@ -123,6 +142,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", "");
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("quantity", defaultQuantity);
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertFalse(response.isSuccess());
@@ -135,6 +155,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", defaultName);
         objectToInject.put("description", "");
+        objectToInject.put("quantity", defaultQuantity);
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertFalse(response.isSuccess());
@@ -147,6 +168,7 @@ class ProductServiceTest {
         objectToInject.put("identifier", defaultCode);
         objectToInject.put("name", defaultName);
         objectToInject.put("description", defaultDescription);
+        objectToInject.put("quantity", defaultQuantity);
 
         Response<Product> response = service.createNewProduct(objectToInject);
         assertTrue(response.isSuccess());

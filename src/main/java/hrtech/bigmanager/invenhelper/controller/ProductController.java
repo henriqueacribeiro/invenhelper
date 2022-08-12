@@ -39,6 +39,7 @@ public class ProductController {
     }
 
     @GetMapping(value = "/getAllIdentifiers", produces = "application/json")
+    @CrossOrigin
     @Operation(summary = "Obtain list of product identifiers")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "List obtained", content = @Content(schema = @Schema(implementation = ArrayList.class)))
@@ -52,6 +53,7 @@ public class ProductController {
     @Operation(summary = "Obtain product by its identifier", parameters = {
             @Parameter(in = ParameterIn.PATH, name = "identifier", description = "Product business identifier")
     })
+    @CrossOrigin
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product created", content = @Content(schema = @Schema(implementation = Product.class))),
             @ApiResponse(responseCode = "400", description = "Error obtaining product", content = @Content(schema = @Schema(implementation = Response.class))),
@@ -63,6 +65,7 @@ public class ProductController {
 
     @PostMapping(value = "/create", produces = "application/json")
     @Operation(summary = "Creates a new product")
+    @CrossOrigin
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product created", content = @Content(schema = @Schema(implementation = Response.class))),
             @ApiResponse(responseCode = "400", description = "Error while creating product", content = @Content(schema = @Schema(implementation = Response.class))),
@@ -83,6 +86,7 @@ public class ProductController {
 
     @PutMapping(value = "updateProduct", produces = "application/json")
     @Operation(summary = "Updates the product name and/or description")
+    @CrossOrigin
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product updated", content = @Content(schema = @Schema(implementation = Response.class))),
             @ApiResponse(responseCode = "400", description = "Error while updating product", content = @Content(schema = @Schema(implementation = Response.class)))
@@ -106,6 +110,7 @@ public class ProductController {
             @Parameter(in = ParameterIn.PATH, name = "quantity", description = "Quantity to increase. Must be positive"),
             @Parameter(in = ParameterIn.PATH, name = "identifier", description = "Product business identifier")
     })
+    @CrossOrigin
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Quantity increased", content = @Content(schema = @Schema(implementation = Response.class))),
             @ApiResponse(responseCode = "400", description = "Error increasing quantity", content = @Content(schema = @Schema(implementation = Response.class)))
@@ -124,6 +129,7 @@ public class ProductController {
             @Parameter(in = ParameterIn.PATH, name = "quantity", description = "Quantity to decrease. Must be positive"),
             @Parameter(in = ParameterIn.PATH, name = "businessIdentifier", description = "Product business identifier")
     })
+    @CrossOrigin
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Quantity decreased", content = @Content(schema = @Schema(implementation = Response.class))),
             @ApiResponse(responseCode = "400", description = "Error decreasing quantity", content = @Content(schema = @Schema(implementation = Response.class)))

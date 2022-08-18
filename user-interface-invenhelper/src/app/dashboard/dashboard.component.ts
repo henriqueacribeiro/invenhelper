@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {ChartData, ChartEvent, ChartType} from "chart.js";
 import {Product} from "../model/product";
 import {ProductService} from "../service/product.service";
@@ -11,8 +11,10 @@ import {ProductStat} from "../model/product-stat";
 })
 export class DashboardComponent implements OnInit {
 
+  @Input() prod: ProductStat = new ProductStat("", { labels: [], datasets: [] });
+
   productsStats: ProductStat[] = [];
-  //products: Product[] = [];
+  products: Product[] = [];
 
   x: number = 100;
 
@@ -29,7 +31,7 @@ export class DashboardComponent implements OnInit {
     this.productService.getAllProductIDs().subscribe(productsIDs => {
       for(let productID of productsIDs){
         this.productService.getProductByID(productID).subscribe(product => {
-          //this.products.push(product);
+          this.products.push(product);
           this.createProductStat(product);
         })
       }
@@ -43,6 +45,10 @@ export class DashboardComponent implements OnInit {
         { data: [ prod.quantity, 1000-prod.quantity ] }
       ]
     }));
+  }
+
+  refreshProd(prod: ProductStat){
+    this.prod = prod;
   }
 
 }

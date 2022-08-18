@@ -1,0 +1,25 @@
+<app-alert [alertType]="alertType" [alertMessage]="alertMessage" (alertTimeout)="hideAlert($event)" *ngIf="showAlert"></app-alert>
+<div class="container product-stats py-3">
+  <div class="row text-center text-black">
+    <div class="mx-auto">
+      <h4 class="display-7">{{product.name}} ({{product.identifier}})</h4>
+    </div>
+    <div class="mx-auto py-5">
+      <h6 class="display-8">{{product.description}}</h6>
+    </div>
+    <div class="mx-auto">
+      <h6 class="display-8">{{product.quantity}} unit(s) available in stock</h6>
+    </div>
+    <div class="mx-auto py-5">
+      <input #qtdInput class="InputStyle w-25" placeholder="Quantity change" type="number">
+      <div class="mx-auto py-4">
+        <button type="button" class="btn mb-2 mb-md-0 btn-primary rounded-4 btn-dash mx-4" (click)="increaseQuantity(+qtdInput.value)">
+          Increase Quantity
+        </button>
+        <button type="button" class="btn mb-2 mb-md-0 btn-primary rounded-4 btn-dash mx-4" (click)="decreaseQuantity(+qtdInput.value)">
+          Decrease Quantity
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

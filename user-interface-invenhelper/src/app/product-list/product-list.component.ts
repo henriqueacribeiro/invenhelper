@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {ProductStat} from "../model/product-stat";
 import {ProductService} from "../service/product.service";
 import {Product} from "../model/product";
@@ -10,38 +10,25 @@ import {Product} from "../model/product";
 })
 export class ProductListComponent implements OnInit {
 
-  productsStats: ProductStat[] = [];
-  //products: Product[] = [];
+  @Input() products: Product[] = [];
 
-  x: number = 100;
+  @Output() selectProductStat = new EventEmitter<ProductStat>();
 
-  // Doughnut
-  doughnutChartLabels: string[] = [ 'Inventory' ] ;
+  @Output() selectProductDet = new EventEmitter<Product>();
 
-  constructor(private productService: ProductService) { }
+  constructor() { }
 
   ngOnInit(): void {
-    this.loadProducts();
   }
 
-  loadProducts(): void{
-    this.productService.getAllProductIDs().subscribe(productsIDs => {
-      for(let productID of productsIDs){
-        this.productService.getProductByID(productID).subscribe(product => {
-          //this.products.push(product);
-          this.createProductStat(product);
-        })
-      }
-    })
-  }
-
-  createProductStat(prod: Product){
-    this.productsStats.push(new ProductStat(prod.name, {
+  sendProduct(prod: Product): void{
+    this.selectProductStat.emit(new ProductStat(prod.name, {
       labels: [prod.name, "Remaining Space"],
       datasets: [
         { data: [ prod.quantity, 1000-prod.quantity ] }
       ]
     }));
+    this.selectProductDet.emit(prod);
   }
 
 }

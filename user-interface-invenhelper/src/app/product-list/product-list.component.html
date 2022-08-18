@@ -1,1 +1,24 @@
-<p>product-list works!</p>
+<div class="container py-5">
+  <div class="row text-center text-black mb-5">
+    <div class="col-lg-7 mx-auto">
+      <h1 class="display-4">Product List</h1>
+    </div>
+  </div>
+  <div class="row" *ngFor="let prod of products">
+    <div class="col-lg-8 mx-auto">
+      <!-- List group-->
+      <ul class="list-group">
+        <!-- list group item-->
+        <li class="list-group-item border-over" (click)="sendProduct(prod)">
+          <!-- Custom content-->
+          <div class="media align-items-lg-center flex-column flex-lg-row p-3">
+            <div class="media-body order-2 order-lg-1">
+              <h5 class="mt-0 font-weight-bold mb-2">{{prod.name}}</h5>
+              <p class="font-italic text-muted mb-0 small">{{prod.description}}</p>
+            </div>
+          </div> <!-- End -->
+        </li> <!-- End -->
+      </ul> <!-- End -->
+    </div>
+  </div>
+</div>

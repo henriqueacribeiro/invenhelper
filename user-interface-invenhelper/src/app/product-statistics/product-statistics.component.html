@@ -1,6 +1,13 @@
-<div class="canvas-singular-graph">
-  <canvas baseChart
-          [data]="product.productData"
-          [type]="doughnutChartType">
-  </canvas>
+<div class="container product-stats py-3">
+  <div class="row text-center text-black">
+    <div class="mx-auto">
+      <h4 class="display-8">{{product.productName[0]}}</h4>
+    </div>
+  </div>
+  <div class="canvas-singular-graph">
+    <canvas baseChart
+            [data]="product.productData"
+            [type]="doughnutChartType">
+    </canvas>
+  </div>
 </div>

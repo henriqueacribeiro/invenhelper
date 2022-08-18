@@ -1,0 +1,48 @@
+.product-stats{
+  //border: 1px solid rgb(33,37,41);
+  //border-radius: 16px;
+  //width: 200px;
+}
+
+.display-7 {
+  font-size: calc(1.325rem + 0.9vw);
+  font-weight: 300;
+  line-height: 1.2;
+}
+@media (min-width: 1200px) {
+  .display-7 {
+    font-size: 2rem;
+  }
+}
+
+.display-8 {
+  font-size: calc(1.275rem + 0.3vw);
+  font-weight: 300;
+  line-height: 1.2;
+}
+@media (min-width: 1200px) {
+  .display-8 {
+    font-size: 1.5rem;
+  }
+}
+
+.InputStyle{
+  //border-radius: 25px;
+  border: 0;
+  background: transparent;
+  width: 300px;
+  padding: 10px 20px;
+}
+
+input:focus{
+  outline: none;
+}
+
+::placeholder {
+  text-align: center;
+}
+
+.btn-dash{
+  background-color: rgba(33, 37, 41, 0.8);
+  border: 0;
+}

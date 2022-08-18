@@ -1,3 +1,14 @@
-<div *ngFor="let prod of productsStats">
+<div class="container float-start w-50">
+  <app-product-list [products]="products" (selectProductStat)="refreshProd($event)"></app-product-list>
+</div>
+<div class="container float-end w-50 py-5" *ngIf="prod.productName[0].length != 0">
+  <div class="row text-center text-black mb-5">
+    <div class="col-lg-7 mx-auto">
+      <h1 class="display-4">Product Statistics</h1>
+    </div>
+  </div>
   <app-product-statistics [product]="prod"></app-product-statistics>
+  <!--div class="py-3" *ngFor="let prod of productsStats">
+    <app-product-statistics [product]="prod"></app-product-statistics>
+  </div-->
 </div>
